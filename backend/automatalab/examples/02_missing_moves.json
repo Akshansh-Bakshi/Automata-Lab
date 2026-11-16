@@ -1,0 +1,18 @@
+{
+  "id": "missing-moves",
+  "name": "One or more a symbols",
+  "description": "Missing b transitions produce an explicit reachable dead state in the DFA.",
+  "nfa": {
+    "schemaVersion": 1,
+    "name": "One or more a symbols",
+    "alphabet": ["a", "b"],
+    "states": ["start", "seenA"],
+    "initialState": "start",
+    "acceptingStates": ["seenA"],
+    "transitions": [
+      {"from": "start", "symbol": "a", "to": ["seenA"]},
+      {"from": "seenA", "symbol": "a", "to": ["seenA"]}
+    ]
+  }
+}
+

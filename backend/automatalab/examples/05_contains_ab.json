@@ -1,0 +1,22 @@
+{
+  "id": "contains-ab",
+  "name": "Contains ab",
+  "description": "A complete deterministic-shaped NFA recognizes strings containing ab.",
+  "nfa": {
+    "schemaVersion": 1,
+    "name": "Strings containing ab",
+    "alphabet": ["a", "b"],
+    "states": ["q0", "q1", "q2"],
+    "initialState": "q0",
+    "acceptingStates": ["q2"],
+    "transitions": [
+      {"from": "q0", "symbol": "a", "to": ["q1"]},
+      {"from": "q0", "symbol": "b", "to": ["q0"]},
+      {"from": "q1", "symbol": "a", "to": ["q1"]},
+      {"from": "q1", "symbol": "b", "to": ["q2"]},
+      {"from": "q2", "symbol": "a", "to": ["q2"]},
+      {"from": "q2", "symbol": "b", "to": ["q2"]}
+    ]
+  }
+}
+

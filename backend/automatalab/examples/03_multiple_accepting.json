@@ -1,0 +1,19 @@
+{
+  "id": "multiple-accepting",
+  "name": "Choose either accepting branch",
+  "description": "A nondeterministic move reaches two accepting NFA states.",
+  "nfa": {
+    "schemaVersion": 1,
+    "name": "Two accepting branches",
+    "alphabet": ["x"],
+    "states": ["q0", "left", "right"],
+    "initialState": "q0",
+    "acceptingStates": ["left", "right"],
+    "transitions": [
+      {"from": "q0", "symbol": "x", "to": ["left", "right"]},
+      {"from": "left", "symbol": "x", "to": ["left"]},
+      {"from": "right", "symbol": "x", "to": ["right"]}
+    ]
+  }
+}
+

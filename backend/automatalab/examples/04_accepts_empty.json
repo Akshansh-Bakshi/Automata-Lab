@@ -1,0 +1,18 @@
+{
+  "id": "accepts-empty",
+  "name": "Even number of a symbols",
+  "description": "The initial state is accepting, so the empty string is accepted.",
+  "nfa": {
+    "schemaVersion": 1,
+    "name": "Even number of a symbols",
+    "alphabet": ["a"],
+    "states": ["even", "odd"],
+    "initialState": "even",
+    "acceptingStates": ["even"],
+    "transitions": [
+      {"from": "even", "symbol": "a", "to": ["odd"]},
+      {"from": "odd", "symbol": "a", "to": ["even"]}
+    ]
+  }
+}
+

@@ -1,0 +1,1192 @@
+{
+  "components": {
+    "schemas": {
+      "ConversionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "dfa": {
+            "$ref": "#/components/schemas/DfaSchema"
+          },
+          "trace": {
+            "$ref": "#/components/schemas/ConversionTraceSchema"
+          }
+        },
+        "required": [
+          "dfa",
+          "trace"
+        ],
+        "title": "ConversionResponse",
+        "type": "object"
+      },
+      "ConversionTraceSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "steps": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "FINISH": "#/components/schemas/FinishStepSchema",
+                  "INIT": "#/components/schemas/InitStepSchema",
+                  "PROCESS_SYMBOL": "#/components/schemas/ProcessSymbolStepSchema",
+                  "STATE_COMPLETE": "#/components/schemas/StateCompleteStepSchema"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/InitStepSchema"
+                },
+                {
+                  "$ref": "#/components/schemas/ProcessSymbolStepSchema"
+                },
+                {
+                  "$ref": "#/components/schemas/StateCompleteStepSchema"
+                },
+                {
+                  "$ref": "#/components/schemas/FinishStepSchema"
+                }
+              ]
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "title": "ConversionTraceSchema",
+        "type": "object"
+      },
+      "DfaSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "acceptingStates": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Acceptingstates",
+            "type": "array"
+          },
+          "alphabet": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Alphabet",
+            "type": "array"
+          },
+          "initialState": {
+            "title": "Initialstate",
+            "type": "string"
+          },
+          "states": {
+            "items": {
+              "$ref": "#/components/schemas/DfaStateSchema"
+            },
+            "title": "States",
+            "type": "array"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/DfaStatsSchema"
+          },
+          "transitions": {
+            "items": {
+              "$ref": "#/components/schemas/DfaTransitionSchema"
+            },
+            "title": "Transitions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "alphabet",
+          "states",
+          "initialState",
+          "acceptingStates",
+          "transitions",
+          "stats"
+        ],
+        "title": "DfaSchema",
+        "type": "object"
+      },
+      "DfaSimulationSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/DfaSimulationStepSchema"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "accepted",
+          "steps"
+        ],
+        "title": "DfaSimulationSchema",
+        "type": "object"
+      },
+      "DfaSimulationStepSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          }
+        },
+        "required": [
+          "position",
+          "symbol",
+          "state"
+        ],
+        "title": "DfaSimulationStepSchema",
+        "type": "object"
+      },
+      "DfaStateSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "isAccepting": {
+            "title": "Isaccepting",
+            "type": "boolean"
+          },
+          "isDead": {
+            "title": "Isdead",
+            "type": "boolean"
+          },
+          "isInitial": {
+            "title": "Isinitial",
+            "type": "boolean"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "subset": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Subset",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "subset",
+          "label",
+          "isInitial",
+          "isAccepting",
+          "isDead"
+        ],
+        "title": "DfaStateSchema",
+        "type": "object"
+      },
+      "DfaStatsSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "dfaStates": {
+            "title": "Dfastates",
+            "type": "integer"
+          },
+          "dfaTransitions": {
+            "title": "Dfatransitions",
+            "type": "integer"
+          },
+          "hasDeadState": {
+            "title": "Hasdeadstate",
+            "type": "boolean"
+          },
+          "nfaStates": {
+            "title": "Nfastates",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "nfaStates",
+          "dfaStates",
+          "dfaTransitions",
+          "hasDeadState"
+        ],
+        "title": "DfaStatsSchema",
+        "type": "object"
+      },
+      "DfaTransitionSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "title": "From",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "to": {
+            "title": "To",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "symbol",
+          "to"
+        ],
+        "title": "DfaTransitionSchema",
+        "type": "object"
+      },
+      "ErrorDetailSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/IssueSchema"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "issues"
+        ],
+        "title": "ErrorDetailSchema",
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetailSchema"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "ExampleSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "nfa": {
+            "$ref": "#/components/schemas/NfaSchema"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "nfa"
+        ],
+        "title": "ExampleSchema",
+        "type": "object"
+      },
+      "ExamplesResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "examples": {
+            "items": {
+              "$ref": "#/components/schemas/ExampleSchema"
+            },
+            "title": "Examples",
+            "type": "array"
+          }
+        },
+        "required": [
+          "examples"
+        ],
+        "title": "ExamplesResponse",
+        "type": "object"
+      },
+      "FinishStepSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "dfaStateCount": {
+            "title": "Dfastatecount",
+            "type": "integer"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "type": {
+            "const": "FINISH",
+            "title": "Type",
+            "type": "string"
+          },
+          "worklist": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Worklist",
+            "type": "array"
+          }
+        },
+        "required": [
+          "index",
+          "type",
+          "dfaStateCount",
+          "worklist",
+          "explanation"
+        ],
+        "title": "FinishStepSchema",
+        "type": "object"
+      },
+      "HealthResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "const": "ok",
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "version"
+        ],
+        "title": "HealthResponse",
+        "type": "object"
+      },
+      "InitStepSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "dfaState": {
+            "title": "Dfastate",
+            "type": "string"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "subset": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Subset",
+            "type": "array"
+          },
+          "type": {
+            "const": "INIT",
+            "title": "Type",
+            "type": "string"
+          },
+          "worklist": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Worklist",
+            "type": "array"
+          }
+        },
+        "required": [
+          "index",
+          "type",
+          "dfaState",
+          "subset",
+          "worklist",
+          "explanation"
+        ],
+        "title": "InitStepSchema",
+        "type": "object"
+      },
+      "IssueSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "path",
+          "message"
+        ],
+        "title": "IssueSchema",
+        "type": "object"
+      },
+      "LayoutPositionSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "x": {
+            "title": "X",
+            "type": "number"
+          },
+          "y": {
+            "title": "Y",
+            "type": "number"
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ],
+        "title": "LayoutPositionSchema",
+        "type": "object"
+      },
+      "NfaRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "nfa": {
+            "$ref": "#/components/schemas/NfaSchema"
+          }
+        },
+        "required": [
+          "nfa"
+        ],
+        "title": "NfaRequest",
+        "type": "object"
+      },
+      "NfaSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "acceptingStates": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Acceptingstates",
+            "type": "array"
+          },
+          "alphabet": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Alphabet",
+            "type": "array"
+          },
+          "initialState": {
+            "title": "Initialstate",
+            "type": "string"
+          },
+          "layout": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/LayoutPositionSchema"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Layout"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "schemaVersion": {
+            "const": 1,
+            "title": "Schemaversion",
+            "type": "integer"
+          },
+          "states": {
+            "items": {
+              "type": "string"
+            },
+            "title": "States",
+            "type": "array"
+          },
+          "transitions": {
+            "items": {
+              "$ref": "#/components/schemas/NfaTransitionSchema"
+            },
+            "title": "Transitions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "alphabet",
+          "states",
+          "initialState",
+          "acceptingStates",
+          "transitions"
+        ],
+        "title": "NfaSchema",
+        "type": "object"
+      },
+      "NfaSimulationSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/NfaSimulationStepSchema"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "accepted",
+          "steps"
+        ],
+        "title": "NfaSimulationSchema",
+        "type": "object"
+      },
+      "NfaSimulationStepSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "activeStates": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Activestates",
+            "type": "array"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          }
+        },
+        "required": [
+          "position",
+          "symbol",
+          "activeStates"
+        ],
+        "title": "NfaSimulationStepSchema",
+        "type": "object"
+      },
+      "NfaTransitionSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "title": "From",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "to": {
+            "items": {
+              "type": "string"
+            },
+            "title": "To",
+            "type": "array"
+          }
+        },
+        "required": [
+          "from",
+          "symbol",
+          "to"
+        ],
+        "title": "NfaTransitionSchema",
+        "type": "object"
+      },
+      "ProcessSymbolStepSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "dfaState": {
+            "title": "Dfastate",
+            "type": "string"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "isNew": {
+            "title": "Isnew",
+            "type": "boolean"
+          },
+          "lookups": {
+            "items": {
+              "$ref": "#/components/schemas/TransitionLookupSchema"
+            },
+            "title": "Lookups",
+            "type": "array"
+          },
+          "result": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Result",
+            "type": "array"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "targetDfaState": {
+            "title": "Targetdfastate",
+            "type": "string"
+          },
+          "type": {
+            "const": "PROCESS_SYMBOL",
+            "title": "Type",
+            "type": "string"
+          },
+          "worklist": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Worklist",
+            "type": "array"
+          }
+        },
+        "required": [
+          "index",
+          "type",
+          "dfaState",
+          "symbol",
+          "lookups",
+          "result",
+          "targetDfaState",
+          "isNew",
+          "worklist",
+          "explanation"
+        ],
+        "title": "ProcessSymbolStepSchema",
+        "type": "object"
+      },
+      "SimulationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "input": {
+            "title": "Input",
+            "type": "string"
+          },
+          "nfa": {
+            "$ref": "#/components/schemas/NfaSchema"
+          }
+        },
+        "required": [
+          "nfa",
+          "input"
+        ],
+        "title": "SimulationRequest",
+        "type": "object"
+      },
+      "SimulationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "dfa": {
+            "$ref": "#/components/schemas/DfaSchema"
+          },
+          "simulation": {
+            "$ref": "#/components/schemas/SimulationSchema"
+          }
+        },
+        "required": [
+          "simulation",
+          "dfa"
+        ],
+        "title": "SimulationResponse",
+        "type": "object"
+      },
+      "SimulationSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "agree": {
+            "title": "Agree",
+            "type": "boolean"
+          },
+          "dfa": {
+            "$ref": "#/components/schemas/DfaSimulationSchema"
+          },
+          "input": {
+            "title": "Input",
+            "type": "string"
+          },
+          "nfa": {
+            "$ref": "#/components/schemas/NfaSimulationSchema"
+          }
+        },
+        "required": [
+          "input",
+          "nfa",
+          "dfa",
+          "agree"
+        ],
+        "title": "SimulationSchema",
+        "type": "object"
+      },
+      "StateCompleteStepSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "dfaState": {
+            "title": "Dfastate",
+            "type": "string"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "isAccepting": {
+            "title": "Isaccepting",
+            "type": "boolean"
+          },
+          "type": {
+            "const": "STATE_COMPLETE",
+            "title": "Type",
+            "type": "string"
+          },
+          "worklist": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Worklist",
+            "type": "array"
+          }
+        },
+        "required": [
+          "index",
+          "type",
+          "dfaState",
+          "isAccepting",
+          "worklist",
+          "explanation"
+        ],
+        "title": "StateCompleteStepSchema",
+        "type": "object"
+      },
+      "TransitionLookupSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "nfaState": {
+            "title": "Nfastate",
+            "type": "string"
+          },
+          "targets": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Targets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "nfaState",
+          "targets"
+        ],
+        "title": "TransitionLookupSchema",
+        "type": "object"
+      },
+      "ValidationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "valid": {
+            "const": true,
+            "default": true,
+            "title": "Valid",
+            "type": "boolean"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/IssueSchema"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "warnings"
+        ],
+        "title": "ValidationResponse",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "AutomataLab API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/examples": {
+      "get": {
+        "description": "Return the stable collection of curated, validated NFAs.",
+        "operationId": "examples_api_examples_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamplesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Malformed JSON"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request body limit exceeded"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Examples",
+        "tags": [
+          "examples"
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "description": "Report whether the API process is ready to serve requests.",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/nfa/convert": {
+      "post": {
+        "description": "Convert a valid epsilon-free NFA into a complete DFA and trace.",
+        "operationId": "convert_nfa_api_nfa_convert_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NfaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Malformed JSON"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request body limit exceeded"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Convert Nfa",
+        "tags": [
+          "nfa"
+        ]
+      }
+    },
+    "/api/nfa/validate": {
+      "post": {
+        "description": "Validate semantic content and report non-blocking warnings.",
+        "operationId": "validate_nfa_api_nfa_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NfaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Malformed JSON"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request body limit exceeded"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Validate Nfa",
+        "tags": [
+          "nfa"
+        ]
+      }
+    },
+    "/api/simulate": {
+      "post": {
+        "description": "Convert the supplied NFA internally and simulate both machines.",
+        "operationId": "simulate_api_simulate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Malformed JSON"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request body limit exceeded"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Simulate",
+        "tags": [
+          "simulation"
+        ]
+      }
+    }
+  }
+}
