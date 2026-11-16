@@ -15,11 +15,11 @@ describe("example loading", () => {
     const example = await screen.findByRole("button", { name: /Ends with 01/ });
     await user.click(example);
 
-    expect(screen.getByRole("heading", { name: "Ends with 01" })).toBeInTheDocument();
-    expect(screen.getAllByText("q0").length).toBeGreaterThan(0);
-    expect(screen.getByText("accepting")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Name" })).toHaveValue("Ends with 01");
+    expect(screen.getByRole("application", { name: "NFA state and transition canvas" })).toBeInTheDocument();
     expect(useAutomatonStore.getState().selectedExampleId).toBe("ends-with-01");
     expect(useAutomatonStore.getState().document?.alphabet).toEqual(["0", "1"]);
+    expect(useAutomatonStore.getState().document?.acceptingStates).toEqual(["q2"]);
   });
 
   it("shows backend and example failure states without replacing the document", async () => {

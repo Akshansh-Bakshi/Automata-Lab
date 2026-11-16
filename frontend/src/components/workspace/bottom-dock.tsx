@@ -3,8 +3,10 @@
 import { ChevronDown, ChevronUp, Clock3, Info } from "lucide-react";
 import type { WorkspaceMode } from "@/store/workspace-store";
 import { useWorkspaceStore } from "@/store/workspace-store";
+import type { NfaDocument } from "@/lib/api/types";
+import { TransitionTable } from "@/components/editor/transition-table";
 
-export function BottomDock({ mode }: { mode: WorkspaceMode }) {
+export function BottomDock({ mode, document }: { mode: WorkspaceMode; document: NfaDocument | null }) {
   const open = useWorkspaceStore((state) => state.bottomDockOpen);
   const toggle = useWorkspaceStore((state) => state.toggleBottomDock);
   const copy = dockCopy[mode];
@@ -21,8 +23,14 @@ export function BottomDock({ mode }: { mode: WorkspaceMode }) {
       </button>
       {open ? (
         <div className="bottom-dock__body">
-          <Info size={17} aria-hidden="true" />
-          <p>{copy.empty}</p>
+          {mode === "build" && document ? (
+            <TransitionTable document={document} />
+          ) : (
+            <>
+              <Info size={17} aria-hidden="true" />
+              <p>{copy.empty}</p>
+            </>
+          )}
         </div>
       ) : null}
     </section>
@@ -31,9 +39,9 @@ export function BottomDock({ mode }: { mode: WorkspaceMode }) {
 
 const dockCopy = {
   build: {
-    title: "Document activity",
-    summary: "No unsaved editing activity",
-    empty: "Document history will appear when NFA editing is introduced. The loaded example is already held in the document store.",
+    title: "Transition table",
+    summary: "Edit the NFA relation by state and symbol",
+    empty: "Create or load an NFA to edit its transition table.",
   },
   convert: {
     title: "Conversion timeline",

@@ -4,95 +4,89 @@
 
 ### Phase 1 — Project foundation
 
-The Next.js frontend shell, FastAPI application, `/api/health` endpoint, linting, testing, and
-Windows PowerShell setup remain intact.
+The Next.js frontend, FastAPI application, `/api/health` endpoint, linting, testing, and Windows
+PowerShell setup remain intact.
 
 ### Phase 2 — Mathematical core and conversion engine
 
 The immutable NFA/DFA models, semantic validation, deterministic breadth-first subset
-construction, conversion trace/replay, and independent simulations remain framework-free.
-Invariants I1–I10 and exhaustive/property-based equivalence tests remain in place.
+construction, conversion trace/replay, independent simulations, invariants, and equivalence tests
+remain framework-free.
 
 ### Phase 3 — Complete FastAPI integration
 
-Implemented:
-
-- Strict Pydantic v2 request/response schemas with camelCase JSON and unknown-field rejection.
-- Explicit schema/core/result mapping functions; no algorithm logic was copied into the API.
-- `GET /api/examples` with five stable packaged and semantically validated NFAs.
-- `POST /api/nfa/validate` with deterministic unreachable-state and unused-symbol warnings.
-- `POST /api/nfa/convert` returning the complete DFA, stats, and contiguous conversion trace.
-- `POST /api/simulate` converting internally and returning both simulations, agreement, and DFA.
-- Structured handlers for malformed JSON, schema and semantic failures, invalid input symbols,
-  generated-state limits, HTTP errors, and sanitized internal errors.
-- A 256 KiB ASGI request-body limit.
-- OpenAPI response models and error documentation.
-
-No frontend feature, graph editor, or playback UI was added during Phase 3.
+Implemented strict Pydantic v2 contracts, five packaged examples, validation warnings, conversion,
+simulation, structured errors, request limits, OpenAPI response models, and explicit API/core
+mapping. Public JSON uses camelCase; transition endpoints retain `from` and `to`.
 
 ### Phase 4 — Premium frontend foundation and design system
 
+Implemented the responsive application shell, reusable light-mode design tokens and states,
+separated Zustand stores, real backend health/example integration, a generated OpenAPI workflow,
+and typed clients for all five endpoints.
+
+### Phase 5 — Complete interactive NFA graph editor
+
 Implemented:
 
-- A responsive light-mode application shell with Build, Convert, and Test workspaces, a
-  contextual sidebar, graph-ready canvas region, and expandable bottom dock.
-- Reusable design tokens and loading, error, and empty-state components.
-- Independent Zustand stores for workspace preferences, automaton documents and conversion
-  freshness, and future playback state.
-- Live backend health reporting and curated example browsing/loading.
-- A readable NFA summary with JSON export while interactive editing and import remain deferred.
-- A generated OpenAPI workflow backed by the live FastAPI schema and a typed client for all five
-  endpoints, including timeouts, cancellation, and structured errors.
-- Frontend coverage for the shell, mode switching, stores, example loading and failure behavior,
-  backend status, API requests/errors, and the generated contract.
+- XYFlow state/transition editing with custom nodes and edges, dragging, selection, zoom, pan,
+  fit-to-view, Dagre automatic layout, self-loops, curved reverse edges, and merged symbol labels.
+- Atomic state creation, rename, delete, initial-state selection, accepting-state toggles, and
+  layout-reference updates in the existing Zustand document store.
+- Alphabet addition/removal with local contract feedback, duplicate prevention, destructive
+  confirmation, and removal of affected transitions.
+- Nondeterministic transition editing through graphical connection, inspector form, and a
+  keyboard-accessible state-by-symbol transition table sharing one document model.
+- Initialization and graph/table rendering for all five backend-curated examples.
+- Exact-schema JSON import with backend semantic validation, failure preservation, deterministic
+  API-compatible export, and round-trip coverage.
+- Debounced backend-authoritative validation with incomplete, validating, valid, invalid, and
+  unavailable states; layout-only changes do not make validation calls.
+- Semantic revision invalidation for stale conversion/playback state and separate cosmetic layout
+  revisions.
 
-No graph editor, subset-construction UI, conversion playback, DFA visualization, or interactive
-string-testing interface was added.
+No DFA visualization, conversion playback controls, or string-simulation interface was added.
 
-## Contract decisions
+## Key editor decisions
 
-- Public JSON uses camelCase; transition endpoints retain the contract keys `from` and `to`.
-- `name` and `layout` are API metadata. Layout references are validated, but metadata is omitted
-  from core dataclasses.
-- Invalid `/api/nfa/validate` requests use the shared 422 error envelope; successful validation
-  returns `valid: true` plus non-blocking warnings.
-- The blueprint's abbreviated DFA example is not literal: responses always include the total
-  transition function in deterministic state/symbol order.
-- DFA stats are calculated by the mapper so core DFA equality and replay remain unchanged.
+- The generated `NfaDocument` API type remains the only mathematical source of truth.
+- Graph nodes and grouped visual edges are derived from the document; the transition table edits
+  the same `(source, symbol) -> targets` records.
+- Deleting the initial state clears `initialState` and reports an incomplete document instead of
+  silently choosing a replacement.
+- State renames update the initial state, accepting states, transition endpoints, selection, and
+  layout metadata atomically.
+- Semantic edits invalidate downstream results. Dragging and auto-layout only change visual
+  metadata and do not invalidate or revalidate the automaton.
+- Import never replaces the current document until local structure and backend semantics pass.
 
 ## Verification
 
 Executed on 16 November 2026:
 
-- Initial Phase 2 regression gate — 50 tests passed; core coverage remained 100%.
-- Final backend suite — 71 tests passed, including all core and health tests.
-- Core coverage — 100% statements and branches (368 statements, 112 branches).
-- API coverage — 96% statements and branches combined (402 statements, 50 branches).
-- `ruff check .` — passed.
-- `mypy automatalab` in strict mode with Python 3.12 semantics — passed across 23 source files.
-- Contract tests cover all five endpoints, OpenAPI aliases, deterministic bytes, curated example
-  validity, trace structure, empty input, warnings, malformed/schema/semantic errors, resource
-  limits, 404 responses, and sanitized internal exceptions.
-- Phase 4 frontend gate — 6 test files and 13 tests passed; ESLint, TypeScript, generated-contract
-  checking, and the Next.js production build passed.
-- Live integration smoke test — the Next.js page, FastAPI health endpoint, CORS header, and all
-  five curated examples responded successfully on temporary local ports.
+- Frontend: ESLint passed.
+- Frontend: strict TypeScript checking passed.
+- Frontend: 13 Vitest files and 27 tests passed.
+- Frontend: generated OpenAPI contract verification passed.
+- Frontend: Next.js production build passed with a statically prerendered root route.
+- Backend regression: Ruff and strict mypy passed across 23 source files.
+- Backend regression: all 71 pytest tests passed.
+- Phase 5 tests cover state/alphabet/transition CRUD, rename/delete reference safety,
+  nondeterminism, self-loops, graph/table synchronization, all five examples, validated import,
+  invalid-import preservation, stable serialization, conversion invalidation, layout isolation,
+  validation states, and keyboard-only editing.
 
 ## Remaining limitations
 
-- Python 3.12 is unavailable on this host. Runtime tests used Python 3.10.0; project metadata,
-  Ruff, and mypy continue to target Python 3.12.
-- The passing health/API tests emit one third-party FastAPI/Starlette test-client deprecation
-  warning about its HTTP dependency.
-- Hypothesis remains constrained to 6.100.x for compatibility with the host's Python 3.10.0
-  dataclass implementation.
-- This environment did not provide an interactive browser preview, so verification covered the
-  production build, DOM behavior in jsdom, and real HTTP integration rather than visual browser
-  inspection.
+- Python 3.12 is unavailable on this host. Runtime backend tests used Python 3.10.0; project
+  metadata, Ruff, and mypy continue to target Python 3.12.
+- Backend tests emit one third-party FastAPI/Starlette test-client deprecation warning about its
+  HTTP dependency.
+- Playwright/browser tooling was not installed, so no browser visual-validation claim is made.
+  Graph behavior is covered by model, DOM, synchronization, production-build, and accessibility
+  tests; an actual browser review remains recommended.
 
 ## Next planned phase
 
-Phase 5 should introduce the first approved interactive automaton workflow while preserving the
-generated API boundary and store separation established here. Its exact scope should follow the
-next phase brief; Phase 5 work has not started.
-
+Phase 6 should add DFA visualization only after its phase brief is approved, reusing the graph
+primitives and preserving the backend conversion contract. Phase 6 work has not started.

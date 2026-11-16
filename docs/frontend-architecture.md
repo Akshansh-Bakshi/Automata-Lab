@@ -1,35 +1,70 @@
 # Frontend architecture
 
-Phase 4 establishes the application shell and typed service boundary without implementing graph
-editing, conversion playback, or simulation controls.
+Phase 5 adds a complete NFA editor to the Phase 4 application shell while preserving the generated
+API boundary. DFA visualization, conversion playback, and simulation controls remain out of scope.
 
 ## Runtime structure
 
 - `src/app/page.tsx` remains a synchronous App Router page and renders the client-side
   `ApplicationShell` boundary.
 - `src/components/header/` owns branding, responsive mode navigation, backend status, examples,
-  and document actions.
-- `src/components/workspace/` owns the contextual sidebar, graph-ready canvas region, temporary
-  NFA summary, and expandable bottom dock.
+  and validated import/export.
+- `src/components/workspace/` owns the contextual sidebar, editor canvas, and expandable bottom
+  dock.
+- `src/components/editor/` owns the Build inspector, XYFlow graph, custom state nodes and
+  transition edges, validation status, and editable transition table.
 - `src/components/ui/` contains reusable loading, error, and empty-state primitives.
-- `src/hooks/` contains abortable health and example queries.
+- `src/hooks/` contains abortable health/example queries and debounced authoritative NFA
+  validation.
 
 The visual system uses CSS custom properties in `src/app/globals.css` for color, type, spacing,
-radii, borders, elevation, and semantic states. Light mode is the only supported theme in this
-phase. Layout breakpoints preserve a sidebar on larger screens and stack panels below 980 px.
+radii, borders, elevation, and semantic states. Light mode remains the supported theme. The editor
+stacks below 980 px and preserves keyboard-accessible forms and table editing at every breakpoint.
 
-## Client state
+## Client state and synchronization
 
-Zustand is split by change frequency and responsibility:
+Zustand remains split by change frequency and responsibility:
 
 - `workspace-store.ts` — active Build/Convert/Test mode and bottom-dock preference.
-- `automaton-store.ts` — active NFA document, selected example, revision, conversion result, and
-  conversion freshness.
+- `automaton-store.ts` — active NFA document, editor selection/notices, atomic state/alphabet/
+  transition mutations, semantic and layout revisions, conversion result, and conversion
+  freshness.
 - `playback-store.ts` — future timeline position, status, and speed.
 
-Every document replacement increments its revision and clears the conversion result. A
-conversion is fresh only when its recorded revision matches the current document revision.
-No automata algorithm is implemented in these stores.
+The API-shaped `NfaDocument` is the only mathematical source of truth. XYFlow nodes and visual
+edges are derived by `src/lib/editor/graph-model.ts`; the transition table reads and writes the
+same transition records. There is no parallel graph model.
+
+Semantic edits increment `documentRevision`, clear stale conversion state, and reset future
+playback state. Dragging and automatic layout update only `layoutRevision`, so cosmetic movement
+does not invalidate a conversion or trigger backend validation. State rename and delete operations
+update references and layout atomically. Deleting the initial state deliberately clears
+`initialState` and reports the incomplete state instead of silently choosing a replacement.
+
+## Graph and table model
+
+- Custom XYFlow state nodes display a start arrow and accepting double ring.
+- API transitions remain unique by `(from, symbol)` with set-valued `to` arrays.
+- Visual edges are grouped by ordered state pair and display all applicable symbols with a stable
+  encoded edge ID.
+- Self-loops use a custom path; opposite-direction edges use curved Bezier paths.
+- Dagre calculates optional left-to-right layout. Positions are saved in API `layout` metadata.
+- Graph connections, the inspector form, and table cells all call the same
+  `setTransitionTargets` store action.
+
+## Editing and validation
+
+Straightforward constraints are enforced locally: state IDs match `[A-Za-z0-9_]{1,16}`, the
+alphabet contains at most ten unique single non-whitespace characters, and the document contains
+at most twenty states. The backend `/api/nfa/validate` endpoint remains authoritative.
+
+`use-nfa-validation.ts` debounces semantic revisions and exposes distinct `incomplete`,
+`validating`, `valid`, `invalid`, and `unavailable` states. Incomplete documents are never sent to
+the backend, and layout-only changes do not make validation requests.
+
+JSON import first checks the exact public structure, then calls backend validation. The existing
+document is replaced only after success. Export uses `canonicalizeNfa` and `serializeNfa` for
+stable transition, target, accepting-state, and layout ordering while retaining API metadata.
 
 ## Generated API contract
 
@@ -48,21 +83,17 @@ to generated schemas.
 and simulation. It uses `NEXT_PUBLIC_API_BASE_URL`, an eight-second default timeout, abort
 signals, and the backend's structured error envelope.
 
-## Phase 4 behavior
+## Phase 5 boundary
 
 Available now:
 
-- real backend health state;
-- real curated-example browsing and selection;
-- readable NFA state, alphabet, initial/accepting state, and transition summaries;
-- responsive Build/Convert/Test shell and honest empty states;
-- JSON export for the active document.
+- real backend health, curated examples, and authoritative NFA validation;
+- complete state, alphabet, transition, layout, import, and export editing;
+- synchronized graph, inspector, and transition table;
+- responsive Build/Convert/Test shell and honest future-phase empty states.
 
 Intentionally unavailable until later phases:
 
-- NFA editing and JSON import;
-- React Flow canvases;
-- conversion submission and playback;
 - DFA visualization;
+- conversion submission and playback;
 - interactive string simulation.
-

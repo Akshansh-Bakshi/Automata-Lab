@@ -4,6 +4,8 @@ import { Boxes, Focus, Network, Route, ScanSearch } from "lucide-react";
 import type { NfaDocument } from "@/lib/api/types";
 import type { WorkspaceMode } from "@/store/workspace-store";
 import { EmptyState } from "@/components/ui/empty-state";
+import { NfaGraph } from "@/components/editor/nfa-graph";
+import { useAutomatonStore } from "@/store/automaton-store";
 import { NfaSummary } from "./nfa-summary";
 
 interface WorkspaceCanvasProps {
@@ -13,6 +15,8 @@ interface WorkspaceCanvasProps {
 
 export function WorkspaceCanvas({ mode, document }: WorkspaceCanvasProps) {
   const meta = canvasCopy[mode];
+  const revision = useAutomatonStore((state) => state.documentRevision);
+  const createDocument = useAutomatonStore((state) => state.createDocument);
   return (
     <main className="workspace-canvas" id="workspace">
       <header className="workspace-canvas__header">
@@ -25,8 +29,8 @@ export function WorkspaceCanvas({ mode, document }: WorkspaceCanvasProps) {
           <p>{meta.description}</p>
         </div>
         <div className="canvas-toolbar" aria-label="Canvas status">
-          <span><Focus size={14} aria-hidden="true" /> Graph-ready surface</span>
-          <span><ScanSearch size={14} aria-hidden="true" /> Responsive viewport</span>
+          <span><Focus size={14} aria-hidden="true" /> {mode === "build" ? "Interactive graph" : "Graph surface"}</span>
+          <span><ScanSearch size={14} aria-hidden="true" /> Zoom & pan</span>
         </div>
       </header>
       <section className="canvas-surface" aria-label={`${meta.title} visualization area`}>
@@ -37,9 +41,14 @@ export function WorkspaceCanvas({ mode, document }: WorkspaceCanvasProps) {
               icon={Network}
               eyebrow="No active document"
               title="Start with a curated NFA"
-              description="Open Examples in the top bar to load a tested automaton. Your selection stays intact if the API later becomes unavailable."
+              description="Create a blank NFA or open Examples in the top bar to load a tested automaton."
             />
+            <button className="primary-button" type="button" onClick={createDocument}>
+              Create blank NFA
+            </button>
           </div>
+        ) : mode === "build" ? (
+          <NfaGraph document={document} revision={revision} />
         ) : mode === "convert" ? (
           <div className="split-visualization">
             <section className="visual-region">
@@ -68,7 +77,7 @@ const canvasCopy = {
   build: {
     kicker: "Machine definition",
     title: "NFA workspace",
-    description: "Inspect the active automaton now; visual editing will attach to this canvas without changing the shell.",
+    description: "Drag states, connect transitions, or use the inspector and transition table for keyboard editing.",
   },
   convert: {
     kicker: "Subset construction",

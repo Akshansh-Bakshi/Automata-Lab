@@ -5,6 +5,18 @@ import { useAutomatonStore } from "@/store/automaton-store";
 import { usePlaybackStore } from "@/store/playback-store";
 import { useWorkspaceStore } from "@/store/workspace-store";
 
+class ResizeObserverMock implements ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+Object.defineProperty(globalThis, "ResizeObserver", {
+  configurable: true,
+  writable: true,
+  value: ResizeObserverMock,
+});
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();

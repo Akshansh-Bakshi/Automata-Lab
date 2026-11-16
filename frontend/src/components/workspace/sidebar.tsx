@@ -1,6 +1,8 @@
 "use client";
 
-import { Braces, CircleDot, Clock3, ListTree, Route, TextCursorInput } from "lucide-react";
+import { Braces, CircleDot, Clock3, ListTree, TextCursorInput } from "lucide-react";
+import { BuildInspector } from "@/components/editor/build-inspector";
+import type { NfaValidationState } from "@/hooks/use-nfa-validation";
 import type { NfaDocument } from "@/lib/api/types";
 import type { WorkspaceMode } from "@/store/workspace-store";
 import { PanelSection } from "./panel-section";
@@ -8,9 +10,10 @@ import { PanelSection } from "./panel-section";
 interface SidebarProps {
   mode: WorkspaceMode;
   document: NfaDocument | null;
+  validation: NfaValidationState;
 }
 
-export function Sidebar({ mode, document }: SidebarProps) {
+export function Sidebar({ mode, document, validation }: SidebarProps) {
   return (
     <aside className="workspace-sidebar" aria-label={`${capitalize(mode)} workspace panel`}>
       <div className="sidebar-heading">
@@ -19,36 +22,15 @@ export function Sidebar({ mode, document }: SidebarProps) {
         <p>{modeDescriptions[mode]}</p>
       </div>
       <div className="sidebar-sections">
-        {mode === "build" ? <BuildSections document={document} /> : null}
+        {mode === "build" ? <BuildInspector document={document} validation={validation} /> : null}
         {mode === "convert" ? <ConvertSections document={document} /> : null}
         {mode === "test" ? <TestSections document={document} /> : null}
       </div>
       <div className="phase-note">
-        <span>Phase 4</span>
-        Structure is ready; editing and execution controls arrive in later phases.
+        <span>Phase 5</span>
+        The NFA editor is live. DFA conversion and string simulation remain intentionally deferred.
       </div>
     </aside>
-  );
-}
-
-function BuildSections({ document }: { document: NfaDocument | null }) {
-  return (
-    <>
-      <PanelSection eyebrow="Document" title="NFA configuration">
-        <Readout label="Name" value={document?.name || "No document loaded"} />
-        <Readout label="Initial state" value={document?.initialState ?? "—"} mono />
-      </PanelSection>
-      <PanelSection eyebrow="Definition" title="States & alphabet">
-        <div className="mini-stat-grid">
-          <MiniStat icon={CircleDot} label="States" value={document?.states.length ?? 0} />
-          <MiniStat icon={Braces} label="Symbols" value={document?.alphabet.length ?? 0} />
-        </div>
-      </PanelSection>
-      <PanelSection eyebrow="Relation" title="Transitions">
-        <MiniStat icon={Route} label="Explicit moves" value={document?.transitions.length ?? 0} wide />
-        <p className="panel-hint">Missing pairs are interpreted as the empty set.</p>
-      </PanelSection>
-    </>
   );
 }
 
@@ -90,35 +72,6 @@ function TestSections({ document }: { document: NfaDocument | null }) {
   );
 }
 
-function Readout({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div className="readout">
-      <span>{label}</span>
-      <strong className={mono ? "mono" : undefined}>{value}</strong>
-    </div>
-  );
-}
-
-function MiniStat({
-  icon: Icon,
-  label,
-  value,
-  wide,
-}: {
-  icon: typeof CircleDot;
-  label: string;
-  value: number;
-  wide?: boolean;
-}) {
-  return (
-    <div className={wide ? "mini-stat mini-stat--wide" : "mini-stat"}>
-      <Icon size={15} aria-hidden="true" />
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  );
-}
-
 function PlaceholderLine({ icon: Icon, text }: { icon: typeof CircleDot; text: string }) {
   return (
     <div className="placeholder-line">
@@ -139,8 +92,7 @@ const modeTitles = {
 } satisfies Record<WorkspaceMode, string>;
 
 const modeDescriptions = {
-  build: "Review the NFA document that future editing controls will modify.",
+  build: "Create states, alphabet symbols, and nondeterministic transitions.",
   convert: "A structured home for explanations, subsets, and the BFS worklist.",
   test: "A focused surface for input traces and NFA/DFA agreement.",
 } satisfies Record<WorkspaceMode, string>;
-

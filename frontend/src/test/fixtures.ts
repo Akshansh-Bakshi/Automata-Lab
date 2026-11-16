@@ -38,6 +38,7 @@ export function mockSuccessfulApi() {
     const url = String(input);
     if (url.endsWith("/api/health")) return jsonResponse(healthResponse);
     if (url.endsWith("/api/examples")) return jsonResponse(examplesResponse);
+    if (url.endsWith("/api/nfa/validate")) return jsonResponse({ valid: true, warnings: [] });
     throw new Error(`Unexpected request: ${url}`);
   });
 }

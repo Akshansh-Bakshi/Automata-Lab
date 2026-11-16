@@ -1,9 +1,9 @@
 # AutomataLab
 
-AutomataLab is an incremental full-stack NFA-to-DFA learning application. It now includes a
-responsive scientific workspace, typed FastAPI integration, curated example loading, a
-deterministic conversion engine, and a production-style API. Interactive graph editing,
-conversion playback, and string-simulation controls remain deferred to later phases.
+AutomataLab is an incremental full-stack NFA-to-DFA learning application. It includes a polished
+interactive NFA editor, typed FastAPI integration, curated examples, a deterministic conversion
+engine, and a production-style API. DFA visualization, conversion playback, and string-simulation
+controls remain deferred to later phases.
 
 ## Repository layout
 
@@ -58,14 +58,28 @@ Available endpoints:
 Interactive API documentation is available at <http://localhost:8000/docs>. See
 [`docs/api-contract.md`](docs/api-contract.md) for the JSON contract and error conventions.
 
-The Phase 4 frontend currently provides:
+The Phase 5 frontend provides:
 
 - responsive Build, Convert, and Test workspace modes;
 - live backend health status;
 - curated example browsing and loading;
-- a readable NFA document summary;
+- an XYFlow graph editor with dragging, zoom, pan, fit-to-view, and Dagre auto-layout;
+- state, alphabet, and nondeterministic-transition CRUD through accessible inspector forms;
+- custom initial/accepting states, self-loops, bidirectional edges, and merged edge labels;
+- an editable transition table synchronized with the graph and document store;
+- backend-authoritative validation with distinct incomplete, invalid, valid, and offline states;
+- validated JSON import and deterministic API-compatible export;
 - typed clients for every backend endpoint;
-- honest empty states for later editing, conversion, playback, and simulation features.
+- honest empty states for later DFA visualization, playback, and simulation features.
+
+Basic editor workflow:
+
+1. Select **Create blank NFA** or open **Examples**.
+2. Add states and alphabet symbols in the Build inspector.
+3. Drag from a state handle to create a graphical transition, use the transition form, or expand
+   the Transition table at the bottom of the workspace.
+4. Select states to rename them or change initial/accepting status.
+5. Use **Import / export** for backend-compatible JSON files.
 
 Regenerate frontend API types after changing FastAPI schemas or routes:
 
