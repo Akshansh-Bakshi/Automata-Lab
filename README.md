@@ -2,8 +2,8 @@
 
 AutomataLab is an incremental full-stack NFA-to-DFA learning application. It includes a polished
 interactive NFA editor, typed FastAPI integration, curated examples, a deterministic conversion
-engine, and a production-style API. DFA visualization, conversion playback, and string-simulation
-controls remain deferred to later phases.
+engine, complete static DFA visualization, and a production-style API. Step-by-step conversion
+playback and string-simulation controls remain deferred to later phases.
 
 ## Repository layout
 
@@ -58,7 +58,7 @@ Available endpoints:
 Interactive API documentation is available at <http://localhost:8000/docs>. See
 [`docs/api-contract.md`](docs/api-contract.md) for the JSON contract and error conventions.
 
-The Phase 5 frontend provides:
+The Phase 6 frontend provides:
 
 - responsive Build, Convert, and Test workspace modes;
 - live backend health status;
@@ -69,8 +69,12 @@ The Phase 5 frontend provides:
 - an editable transition table synchronized with the graph and document store;
 - backend-authoritative validation with distinct incomplete, invalid, valid, and offline states;
 - validated JSON import and deterministic API-compatible export;
+- backend-powered NFA-to-DFA conversion with request racing and stale-result protection;
+- side-by-side read-only NFA and generated DFA graphs;
+- canonical DFA subset labels, accepting/initial/dead-state styling, and Dagre layout;
+- complete DFA transition table, subset mapping inspector, and backend statistics;
 - typed clients for every backend endpoint;
-- honest empty states for later DFA visualization, playback, and simulation features.
+- honest empty states for later playback and simulation features.
 
 Basic editor workflow:
 
@@ -80,6 +84,16 @@ Basic editor workflow:
    the Transition table at the bottom of the workspace.
 4. Select states to rename them or change initial/accepting status.
 5. Use **Import / export** for backend-compatible JSON files.
+
+Conversion workflow:
+
+1. Build, import, or load a valid NFA.
+2. Select **Convert** and wait for authoritative validation to finish.
+3. Select **Generate DFA** to call the backend subset-construction engine.
+4. Inspect the source NFA and generated DFA side by side, select DFA states to review their NFA
+   subsets, and expand the DFA transition table.
+5. Return to **Build** to edit the source. Semantic edits invalidate the result; graph dragging
+   preserves it. Generate again when the result is marked stale.
 
 Regenerate frontend API types after changing FastAPI schemas or routes:
 

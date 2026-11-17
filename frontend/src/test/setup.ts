@@ -4,6 +4,7 @@ import { afterEach, vi } from "vitest";
 import { useAutomatonStore } from "@/store/automaton-store";
 import { usePlaybackStore } from "@/store/playback-store";
 import { useWorkspaceStore } from "@/store/workspace-store";
+import { cancelActiveConversion } from "@/lib/conversion/run-conversion";
 
 class ResizeObserverMock implements ResizeObserver {
   observe() {}
@@ -18,6 +19,7 @@ Object.defineProperty(globalThis, "ResizeObserver", {
 });
 
 afterEach(() => {
+  cancelActiveConversion();
   cleanup();
   vi.unstubAllGlobals();
   vi.useRealTimers();

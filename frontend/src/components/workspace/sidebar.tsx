@@ -1,7 +1,8 @@
 "use client";
 
-import { Braces, CircleDot, Clock3, ListTree, TextCursorInput } from "lucide-react";
+import { CircleDot, Clock3, TextCursorInput } from "lucide-react";
 import { BuildInspector } from "@/components/editor/build-inspector";
+import { ConvertInspector } from "@/components/conversion/convert-inspector";
 import type { NfaValidationState } from "@/hooks/use-nfa-validation";
 import type { NfaDocument } from "@/lib/api/types";
 import type { WorkspaceMode } from "@/store/workspace-store";
@@ -23,33 +24,14 @@ export function Sidebar({ mode, document, validation }: SidebarProps) {
       </div>
       <div className="sidebar-sections">
         {mode === "build" ? <BuildInspector document={document} validation={validation} /> : null}
-        {mode === "convert" ? <ConvertSections document={document} /> : null}
+        {mode === "convert" ? <ConvertInspector document={document} validation={validation} /> : null}
         {mode === "test" ? <TestSections document={document} /> : null}
       </div>
       <div className="phase-note">
-        <span>Phase 5</span>
-        The NFA editor is live. DFA conversion and string simulation remain intentionally deferred.
+        <span>Phase 6</span>
+        Static DFA generation is live. Step playback and string simulation remain intentionally deferred.
       </div>
     </aside>
-  );
-}
-
-function ConvertSections({ document }: { document: NfaDocument | null }) {
-  return (
-    <>
-      <PanelSection eyebrow="Algorithm" title="Explanation">
-        <PlaceholderLine
-          icon={ListTree}
-          text={document ? "This NFA is ready for the future conversion workflow." : "Load an NFA to prepare conversion."}
-        />
-      </PanelSection>
-      <PanelSection eyebrow="Current state" title="Subset information">
-        <PlaceholderLine icon={Braces} text="No subset is being processed." />
-      </PanelSection>
-      <PanelSection eyebrow="Breadth-first queue" title="Worklist">
-        <PlaceholderLine icon={Clock3} text="The worklist appears after a conversion begins." />
-      </PanelSection>
-    </>
   );
 }
 
@@ -87,12 +69,12 @@ function capitalize(value: string) {
 
 const modeTitles = {
   build: "Define the machine",
-  convert: "Trace subset construction",
+  convert: "Generate the DFA",
   test: "Compare language behavior",
 } satisfies Record<WorkspaceMode, string>;
 
 const modeDescriptions = {
   build: "Create states, alphabet symbols, and nondeterministic transitions.",
-  convert: "A structured home for explanations, subsets, and the BFS worklist.",
+  convert: "Run backend subset construction and inspect every generated subset.",
   test: "A focused surface for input traces and NFA/DFA agreement.",
 } satisfies Record<WorkspaceMode, string>;

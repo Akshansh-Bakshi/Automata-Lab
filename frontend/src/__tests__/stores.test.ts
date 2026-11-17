@@ -19,7 +19,10 @@ describe("client stores", () => {
       },
       trace: { steps: [] },
     } satisfies ConversionResponse;
-    useAutomatonStore.getState().setConversion(conversion);
+    const request = useAutomatonStore.getState().beginConversion();
+    useAutomatonStore
+      .getState()
+      .setConversion(request.requestId, request.revision, conversion);
 
     expect(useAutomatonStore.getState().isConversionFresh()).toBe(true);
     const firstRevision = useAutomatonStore.getState().documentRevision;
@@ -29,7 +32,7 @@ describe("client stores", () => {
     const changed = useAutomatonStore.getState();
     expect(changed.documentRevision).toBe(firstRevision + 1);
     expect(changed.conversion).toBeNull();
-    expect(changed.conversionStatus).toBe("idle");
+    expect(changed.conversionStatus).toBe("stale");
     expect(changed.isConversionFresh()).toBe(false);
   });
 

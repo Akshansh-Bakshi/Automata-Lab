@@ -81,7 +81,10 @@ describe("NFA editor store", () => {
 
   it("invalidates conversion for semantic edits but isolates cosmetic layout metadata", () => {
     useAutomatonStore.getState().replaceDocument(sampleNfa);
-    useAutomatonStore.getState().setConversion(conversion);
+    const request = useAutomatonStore.getState().beginConversion();
+    useAutomatonStore
+      .getState()
+      .setConversion(request.requestId, request.revision, conversion);
     const revision = useAutomatonStore.getState().documentRevision;
 
     useAutomatonStore.getState().setLayoutPosition("q0", { x: 501, y: 202 });

@@ -5,11 +5,15 @@ import type { WorkspaceMode } from "@/store/workspace-store";
 import { useWorkspaceStore } from "@/store/workspace-store";
 import type { NfaDocument } from "@/lib/api/types";
 import { TransitionTable } from "@/components/editor/transition-table";
+import { DfaTransitionTable } from "@/components/conversion/dfa-transition-table";
+import { useAutomatonStore } from "@/store/automaton-store";
 
 export function BottomDock({ mode, document }: { mode: WorkspaceMode; document: NfaDocument | null }) {
   const open = useWorkspaceStore((state) => state.bottomDockOpen);
   const toggle = useWorkspaceStore((state) => state.toggleBottomDock);
   const copy = dockCopy[mode];
+  const conversion = useAutomatonStore((state) => state.conversion);
+  const conversionFresh = useAutomatonStore((state) => state.isConversionFresh());
 
   return (
     <section className="bottom-dock" data-open={open} aria-label={copy.title}>
@@ -25,6 +29,8 @@ export function BottomDock({ mode, document }: { mode: WorkspaceMode; document: 
         <div className="bottom-dock__body">
           {mode === "build" && document ? (
             <TransitionTable document={document} />
+          ) : mode === "convert" && conversion && conversionFresh ? (
+            <DfaTransitionTable dfa={conversion.dfa} />
           ) : (
             <>
               <Info size={17} aria-hidden="true" />
@@ -44,9 +50,9 @@ const dockCopy = {
     empty: "Create or load an NFA to edit its transition table.",
   },
   convert: {
-    title: "Conversion timeline",
-    summary: "Playback is not available in Phase 4",
-    empty: "Algorithm steps, playback controls, and the DFA transition table will live here after conversion is connected.",
+    title: "DFA transition table",
+    summary: "Inspect the complete deterministic transition function",
+    empty: "Generate a fresh DFA to inspect its complete transition table.",
   },
   test: {
     title: "Simulation timeline",

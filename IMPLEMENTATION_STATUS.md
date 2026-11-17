@@ -47,6 +47,32 @@ Implemented:
 
 No DFA visualization, conversion playback controls, or string-simulation interface was added.
 
+### Phase 6 — Complete DFA generation and visualization
+
+Implemented:
+
+- Functional Convert action using the typed `/api/nfa/convert` client and backend subset
+  construction; no conversion algorithm was added to TypeScript.
+- Request IDs and captured document revisions prevent duplicate, late, or racing responses from
+  overwriting newer state.
+- Explicit idle, loading, ready, stale, and error conversion states with structured resource-limit,
+  offline, invalid/incomplete, and unexpected-error presentation.
+- Responsive dual-graph workspace with the original NFA in read-only mode and the complete backend
+  DFA in a draggable XYFlow canvas.
+- Custom DFA nodes for canonical IDs, compact subset labels, initial arrows, accepting double
+  circles, empty-subset dead states, selection, zoom/pan, fit view, and Dagre auto-layout.
+- DFA graph edges derived only from returned transitions, including self-loops, curved reverse
+  edges, and merged symbols for shared ordered pairs.
+- Complete DFA transition table with initial, accepting, dead, and subset annotations. Missing or
+  duplicate state/symbol transitions are treated as API-contract violations.
+- Subset mapping and selected-state inspector explaining membership and acceptance, plus backend
+  statistics and explicit empty-language handling.
+- Semantic NFA edits invalidate results and active requests; NFA/DFA layout changes preserve fresh
+  mathematical results.
+
+The backend conversion trace is stored for Phase 7, but no playback controls or step animation were
+implemented. String simulation remains deferred to Phase 8.
+
 ## Key editor decisions
 
 - The generated `NfaDocument` API type remains the only mathematical source of truth.
@@ -75,6 +101,13 @@ Executed on 16 November 2026:
   nondeterminism, self-loops, graph/table synchronization, all five examples, validated import,
   invalid-import preservation, stable serialization, conversion invalidation, layout isolation,
   validation states, and keyboard-only editing.
+- Phase 6 frontend gate: 17 Vitest files and 43 tests passed; ESLint, strict TypeScript, generated
+  OpenAPI verification, and the Next.js production build passed.
+- Phase 6 backend regression gate: Ruff, strict mypy, and all 71 pytest tests passed.
+- Phase 6 coverage includes successful/blocked/error conversion requests, duplicate and stale
+  responses, semantic invalidation, layout preservation, DFA graph derivation, initial/accepting/
+  dead rendering, total-table enforcement, subset inspection, curated-example conversion, and
+  import-to-conversion workflow.
 
 ## Remaining limitations
 
@@ -88,5 +121,5 @@ Executed on 16 November 2026:
 
 ## Next planned phase
 
-Phase 6 should add DFA visualization only after its phase brief is approved, reusing the graph
-primitives and preserving the backend conversion contract. Phase 6 work has not started.
+Phase 7 should add conversion-trace playback using the already stored backend trace. It must not
+reimplement subset construction or mutate the static DFA result. Phase 7 work has not started.

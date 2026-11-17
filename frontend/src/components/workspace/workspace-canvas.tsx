@@ -1,10 +1,11 @@
 "use client";
 
-import { Boxes, Focus, Network, Route, ScanSearch } from "lucide-react";
+import { Focus, Network, ScanSearch } from "lucide-react";
 import type { NfaDocument } from "@/lib/api/types";
 import type { WorkspaceMode } from "@/store/workspace-store";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NfaGraph } from "@/components/editor/nfa-graph";
+import { ConversionWorkspace } from "@/components/conversion/conversion-workspace";
 import { useAutomatonStore } from "@/store/automaton-store";
 import { NfaSummary } from "./nfa-summary";
 
@@ -50,21 +51,7 @@ export function WorkspaceCanvas({ mode, document }: WorkspaceCanvasProps) {
         ) : mode === "build" ? (
           <NfaGraph document={document} revision={revision} />
         ) : mode === "convert" ? (
-          <div className="split-visualization">
-            <section className="visual-region">
-              <div className="visual-region__label"><Network size={14} /> Source NFA</div>
-              <NfaSummary document={document} compact />
-            </section>
-            <section className="visual-region visual-region--placeholder">
-              <div className="visual-region__label"><Route size={14} /> Generated DFA</div>
-              <EmptyState
-                compact
-                icon={Boxes}
-                title="DFA canvas reserved"
-                description="Conversion and playback are intentionally deferred. No client-side algorithm is running."
-              />
-            </section>
-          </div>
+          <ConversionWorkspace document={document} revision={revision} />
         ) : (
           <NfaSummary document={document} />
         )}
@@ -82,7 +69,7 @@ const canvasCopy = {
   convert: {
     kicker: "Subset construction",
     title: "Conversion workspace",
-    description: "The source and destination regions are ready for a deterministic backend trace in a later phase.",
+    description: "Generate a complete DFA on the backend and inspect it beside the read-only source NFA.",
   },
   test: {
     kicker: "Language comparison",

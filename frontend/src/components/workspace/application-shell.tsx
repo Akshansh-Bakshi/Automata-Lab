@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/header/app-header";
 import { useBackendHealth } from "@/hooks/use-backend-health";
 import { useExamples } from "@/hooks/use-examples";
 import { useNfaValidation } from "@/hooks/use-nfa-validation";
+import { cancelActiveConversion } from "@/lib/conversion/run-conversion";
 import type { Example } from "@/lib/api/types";
 import { useAutomatonStore } from "@/store/automaton-store";
 import { usePlaybackStore } from "@/store/playback-store";
@@ -27,7 +28,10 @@ export function ApplicationShell() {
   useEffect(
     () =>
       useAutomatonStore.subscribe((state, previous) => {
-        if (state.documentRevision !== previous.documentRevision) resetPlayback();
+        if (state.documentRevision !== previous.documentRevision) {
+          cancelActiveConversion();
+          resetPlayback();
+        }
       }),
     [resetPlayback],
   );

@@ -29,15 +29,23 @@ const edgeTypes = { transition: TransitionEdge };
 const NODE_WIDTH = 86;
 const NODE_HEIGHT = 70;
 
-export function NfaGraph({ document, revision }: { document: NfaDocument; revision: number }) {
+export function NfaGraph({
+  document,
+  revision,
+  readOnly = false,
+}: {
+  document: NfaDocument;
+  revision: number;
+  readOnly?: boolean;
+}) {
   return (
     <ReactFlowProvider>
-      <GraphViewport key={revision} document={document} />
+      <GraphViewport key={revision} document={document} readOnly={readOnly} />
     </ReactFlowProvider>
   );
 }
 
-function GraphViewport({ document }: { document: NfaDocument }) {
+function GraphViewport({ document, readOnly }: { document: NfaDocument; readOnly: boolean }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<StateFlowNode>(documentToNodes(document));
   const edges = useMemo(() => documentToEdges(document), [document]);
   const [pendingConnection, setPendingConnection] = useState<Connection | null>(null);
@@ -71,7 +79,7 @@ function GraphViewport({ document }: { document: NfaDocument }) {
   return (
     <div
       className="nfa-graph"
-      aria-label="Interactive NFA graph editor"
+      aria-label={readOnly ? "Read-only NFA graph" : "Interactive NFA graph editor"}
       onKeyDown={(event) => {
         if (event.key === "Escape") {
           setPendingConnection(null);
@@ -83,9 +91,11 @@ function GraphViewport({ document }: { document: NfaDocument }) {
         <button type="button" onClick={() => void fitView({ padding: 0.22, duration: 220 })}>
           <Focus size={15} aria-hidden="true" /> Fit view
         </button>
-        <button type="button" onClick={autoLayout}>
-          <LayoutDashboard size={15} aria-hidden="true" /> Auto layout
-        </button>
+        {!readOnly ? (
+          <button type="button" onClick={autoLayout}>
+            <LayoutDashboard size={15} aria-hidden="true" /> Auto layout
+          </button>
+        ) : null}
       </div>
       <ReactFlow<StateFlowNode, TransitionFlowEdge>
         nodes={nodes}
@@ -93,27 +103,27 @@ function GraphViewport({ document }: { document: NfaDocument }) {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
-        onNodeClick={(_, node) => selectState(node.id)}
+        onNodeClick={readOnly ? undefined : (_, node) => selectState(node.id)}
         onPaneClick={() => {
           selectState(null);
           setSelectedEdge(null);
         }}
-        onNodeDragStop={(_, node) => setLayoutPosition(node.id, node.position)}
-        onConnect={(connection) => {
+        onNodeDragStop={readOnly ? undefined : (_, node) => setLayoutPosition(node.id, node.position)}
+        onConnect={readOnly ? undefined : (connection) => {
           if (connection.source && connection.target) setPendingConnection(connection);
         }}
-        onEdgeClick={(_, edge) => setSelectedEdge(edge)}
+        onEdgeClick={readOnly ? undefined : (_, edge) => setSelectedEdge(edge)}
         fitView
         fitViewOptions={{ padding: 0.22 }}
         minZoom={0.25}
         maxZoom={2}
         deleteKeyCode={null}
         elementsSelectable
-        nodesConnectable
-        nodesDraggable
+        nodesConnectable={!readOnly}
+        nodesDraggable={!readOnly}
         panOnDrag
         zoomOnScroll
-        aria-label="NFA state and transition canvas"
+        aria-label={readOnly ? "Read-only NFA state and transition canvas" : "NFA state and transition canvas"}
       >
         <Background gap={22} size={1} color="#c9d0dc" />
         <Controls showInteractive={false} />
@@ -121,7 +131,7 @@ function GraphViewport({ document }: { document: NfaDocument }) {
           <MiniMap pannable zoomable nodeColor="#dfe4ff" maskColor="rgb(247 249 252 / 72%)" />
         ) : null}
       </ReactFlow>
-      {pendingConnection?.source && pendingConnection.target ? (
+      {!readOnly && pendingConnection?.source && pendingConnection.target ? (
         <ConnectionEditor
           document={document}
           source={pendingConnection.source}
@@ -129,7 +139,7 @@ function GraphViewport({ document }: { document: NfaDocument }) {
           onClose={() => setPendingConnection(null)}
         />
       ) : null}
-      {selectedEdge ? (
+      {!readOnly && selectedEdge ? (
         <div className="edge-inspector" role="dialog" aria-label="Selected transition">
           <button
             className="edge-inspector__close"

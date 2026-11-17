@@ -9,7 +9,7 @@ import {
 } from "@/lib/editor/nfa-document";
 import { removeVisualEdge } from "@/lib/editor/graph-model";
 
-type ConversionStatus = "idle" | "loading" | "ready" | "error";
+export type ConversionStatus = "idle" | "loading" | "ready" | "stale" | "error";
 
 export interface EditorActionResult {
   ok: boolean;
@@ -26,6 +26,11 @@ interface AutomatonState {
   conversionRevision: number | null;
   conversionStatus: ConversionStatus;
   conversionError: string | null;
+  conversionErrorCode: string | null;
+  conversionRequestId: number;
+  selectedDfaStateId: string | null;
+  dfaLayout: Record<string, { x: number; y: number }>;
+  dfaLayoutRevision: number;
   editorNotice: string | null;
   createDocument: () => void;
   loadExample: (example: Example) => void;
@@ -44,9 +49,16 @@ interface AutomatonState {
   setLayoutPosition: (state: string, position: { x: number; y: number }) => void;
   replaceLayout: (layout: Record<string, { x: number; y: number }>) => void;
   clearEditorNotice: () => void;
-  beginConversion: () => void;
-  setConversion: (conversion: ConversionResponse) => void;
-  failConversion: (message: string) => void;
+  beginConversion: () => { requestId: number; revision: number };
+  setConversion: (
+    requestId: number,
+    revision: number,
+    conversion: ConversionResponse,
+  ) => boolean;
+  failConversion: (requestId: number, revision: number, code: string, message: string) => boolean;
+  selectDfaState: (state: string | null) => void;
+  setDfaLayoutPosition: (state: string, position: { x: number; y: number }) => void;
+  replaceDfaLayout: (layout: Record<string, { x: number; y: number }>) => void;
   isConversionFresh: () => boolean;
   reset: () => void;
 }
@@ -61,18 +73,32 @@ const initialState = {
   conversionRevision: null,
   conversionStatus: "idle" as const,
   conversionError: null,
+  conversionErrorCode: null,
+  conversionRequestId: 0,
+  selectedDfaStateId: null,
+  dfaLayout: {},
+  dfaLayoutRevision: 0,
   editorNotice: null,
 };
 
 function changedDocument(state: AutomatonState, document: NfaDocument, extras = {}) {
+  const hadConversion =
+    state.conversion !== null ||
+    state.conversionStatus === "loading" ||
+    state.conversionStatus === "stale";
   return {
     document,
     selectedExampleId: null,
     documentRevision: state.documentRevision + 1,
     conversion: null,
     conversionRevision: null,
-    conversionStatus: "idle" as const,
+    conversionStatus: hadConversion ? ("stale" as const) : ("idle" as const),
     conversionError: null,
+    conversionErrorCode: null,
+    conversionRequestId: state.conversionRequestId + 1,
+    selectedDfaStateId: null,
+    dfaLayout: {},
+    dfaLayoutRevision: state.dfaLayoutRevision + 1,
     editorNotice: null,
     ...extras,
   };
@@ -276,15 +302,66 @@ export const useAutomatonStore = create<AutomatonState>((set, get) => ({
     }));
   },
   clearEditorNotice: () => set({ editorNotice: null }),
-  beginConversion: () => set({ conversionStatus: "loading", conversionError: null }),
-  setConversion: (conversion) =>
-    set((state) => ({
+  beginConversion: () => {
+    const state = get();
+    const requestId = state.conversionRequestId + 1;
+    const revision = state.documentRevision;
+    set({
+      conversion: null,
+      conversionRevision: null,
+      conversionStatus: "loading",
+      conversionError: null,
+      conversionErrorCode: null,
+      conversionRequestId: requestId,
+      selectedDfaStateId: null,
+      dfaLayout: {},
+    });
+    return { requestId, revision };
+  },
+  setConversion: (requestId, revision, conversion) => {
+    const state = get();
+    if (state.conversionRequestId !== requestId || state.documentRevision !== revision) return false;
+    set({
       conversion,
-      conversionRevision: state.documentRevision,
+      conversionRevision: revision,
       conversionStatus: "ready",
       conversionError: null,
+      conversionErrorCode: null,
+      selectedDfaStateId: conversion.dfa.initialState,
+      dfaLayout: {},
+    });
+    return true;
+  },
+  failConversion: (requestId, revision, conversionErrorCode, conversionError) => {
+    const state = get();
+    if (state.conversionRequestId !== requestId || state.documentRevision !== revision) return false;
+    set({
+      conversion: null,
+      conversionRevision: null,
+      conversionStatus: "error",
+      conversionError,
+      conversionErrorCode,
+      selectedDfaStateId: null,
+      dfaLayout: {},
+    });
+    return true;
+  },
+  selectDfaState: (selectedDfaStateId) => set({ selectedDfaStateId }),
+  setDfaLayoutPosition: (stateId, position) => {
+    const dfa = get().conversion?.dfa;
+    if (!dfa?.states.some((state) => state.id === stateId)) return;
+    const current = get().dfaLayout[stateId];
+    if (current?.x === position.x && current.y === position.y) return;
+    set((state) => ({
+      dfaLayout: { ...state.dfaLayout, [stateId]: position },
+      dfaLayoutRevision: state.dfaLayoutRevision + 1,
+    }));
+  },
+  replaceDfaLayout: (dfaLayout) =>
+    set((state) => ({
+      dfaLayout: structuredClone(dfaLayout),
+      dfaLayoutRevision: state.dfaLayoutRevision + 1,
     })),
-  failConversion: (conversionError) => set({ conversionStatus: "error", conversionError }),
   isConversionFresh: () => {
     const state = get();
     return state.conversion !== null && state.conversionRevision === state.documentRevision;
