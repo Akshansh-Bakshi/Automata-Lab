@@ -19,7 +19,6 @@ export function BuildInspector({
   const setDocumentName = useAutomatonStore((state) => state.setDocumentName);
   const notice = useAutomatonStore((state) => state.editorNotice);
   const clearNotice = useAutomatonStore((state) => state.clearEditorNotice);
-  const revision = useAutomatonStore((state) => state.documentRevision);
 
   if (!document) {
     return (
@@ -59,7 +58,7 @@ export function BuildInspector({
       </PanelSection>
       <StateEditor document={document} />
       <AlphabetEditor document={document} />
-      <TransitionEditor key={revision} document={document} />
+      <TransitionEditor key={`${document.states.join("|")}:${document.alphabet.join("|")}`} document={document} />
     </>
   );
 }
@@ -276,20 +275,21 @@ function TransitionEditor({ document }: { document: NfaDocument }) {
   const initialSymbol = document.alphabet[0] ?? "";
   const [source, setSource] = useState(initialSource);
   const [symbol, setSymbol] = useState(initialSymbol);
-  const [targets, setTargets] = useState<string[]>(
-    document.transitions.find(
-      (transition) => transition.from === initialSource && transition.symbol === initialSymbol,
-    )?.to ?? [],
-  );
+  const [draft, setDraft] = useState<{
+    source: string;
+    symbol: string;
+    base: string[];
+    targets: string[];
+  } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const setTransitionTargets = useAutomatonStore((state) => state.setTransitionTargets);
-
-  const loadPair = (nextSource: string, nextSymbol: string) => {
-    const transition = document.transitions.find(
-      (candidate) => candidate.from === nextSource && candidate.symbol === nextSymbol,
-    );
-    setTargets(transition?.to ?? []);
-  };
+  const savedTargets = document.transitions.find(
+    (transition) => transition.from === source && transition.symbol === symbol,
+  )?.to ?? [];
+  const draftIsCurrent = draft?.source === source && draft.symbol === symbol &&
+    draft.base.length === savedTargets.length &&
+    draft.base.every((target, index) => target === savedTargets[index]);
+  const targets = draftIsCurrent ? draft.targets : savedTargets;
 
   return (
     <PanelSection eyebrow="Transitions" title="Edit one state-symbol pair">
@@ -317,7 +317,6 @@ function TransitionEditor({ document }: { document: NfaDocument }) {
                 value={source}
                 onChange={(event) => {
                   setSource(event.target.value);
-                  loadPair(event.target.value, symbol);
                 }}
               >
                 {document.states.map((state) => <option key={state}>{state}</option>)}
@@ -329,7 +328,6 @@ function TransitionEditor({ document }: { document: NfaDocument }) {
                 value={symbol}
                 onChange={(event) => {
                   setSymbol(event.target.value);
-                  loadPair(source, event.target.value);
                 }}
               >
                 {document.alphabet.map((candidate) => <option key={candidate}>{candidate}</option>)}
@@ -343,13 +341,14 @@ function TransitionEditor({ document }: { document: NfaDocument }) {
                 <input
                   type="checkbox"
                   checked={targets.includes(state)}
-                  onChange={() =>
-                    setTargets((current) =>
-                      current.includes(state)
-                        ? current.filter((target) => target !== state)
-                        : [...current, state],
-                    )
-                  }
+                  onChange={() => setDraft({
+                    source,
+                    symbol,
+                    base: savedTargets,
+                    targets: targets.includes(state)
+                      ? targets.filter((target) => target !== state)
+                      : [...targets, state],
+                  })}
                 />
                 {state}
               </label>

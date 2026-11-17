@@ -42,6 +42,7 @@ export function ExamplePicker({
         ref={triggerButton}
         className="header-action"
         type="button"
+        aria-label="Examples"
         onClick={() => setOpen(true)}
       >
         <Library size={16} aria-hidden="true" />

@@ -12,7 +12,7 @@ describe("HomePage", () => {
   it("renders the AutomataLab workspace and honest empty states", () => {
     render(<HomePage />);
 
-    expect(screen.getByRole("link", { name: "AutomataLab workspace home" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /AutomataLab/ })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "NFA workspace" })).toBeInTheDocument();
     expect(screen.getByText("Start with a curated NFA")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Workspace modes" })).toHaveAttribute(

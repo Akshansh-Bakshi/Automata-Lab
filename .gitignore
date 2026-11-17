@@ -19,6 +19,10 @@ __pycache__/
 .mypy_cache/
 .coverage
 htmlcov/
+playwright-report/
+test-results/
+.playwright-browsers/
+qa-artifacts/
 .venv/
 venv/
 *.egg-info/

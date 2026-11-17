@@ -8,11 +8,12 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useNodesState,
+  useNodesInitialized,
   useReactFlow,
   type Connection,
 } from "@xyflow/react";
 import { Focus, LayoutDashboard, Trash2, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { NfaDocument } from "@/lib/api/types";
 import type { PlaybackSnapshot } from "@/lib/conversion/playback-model";
 import {
@@ -62,6 +63,14 @@ function GraphViewport({ document, readOnly, snapshot }: { document: NfaDocument
   const replaceLayout = useAutomatonStore((state) => state.replaceLayout);
   const removeVisualTransition = useAutomatonStore((state) => state.removeVisualTransition);
   const { fitView } = useReactFlow<StateFlowNode, TransitionFlowEdge>();
+  const nodesInitialized = useNodesInitialized();
+  const didFit = useRef(false);
+
+  useEffect(() => {
+    if (!nodesInitialized || didFit.current) return;
+    didFit.current = true;
+    window.requestAnimationFrame(() => void fitView({ padding: 0.35, maxZoom: 1.1, duration: 0 }));
+  }, [nodesInitialized, fitView]);
 
   const autoLayout = () => {
     const graph = new dagre.graphlib.Graph();
@@ -80,7 +89,7 @@ function GraphViewport({ document, readOnly, snapshot }: { document: NfaDocument
     );
     setNodes((current) => current.map((node) => ({ ...node, position: layout[node.id] })));
     replaceLayout(layout);
-    window.requestAnimationFrame(() => void fitView({ padding: 0.22, duration: 240 }));
+    window.requestAnimationFrame(() => void fitView({ padding: 0.35, maxZoom: 1.1, duration: 240 }));
   };
 
   return (
@@ -95,7 +104,7 @@ function GraphViewport({ document, readOnly, snapshot }: { document: NfaDocument
       }}
     >
       <div className="graph-toolbar" aria-label="Graph controls">
-        <button type="button" onClick={() => void fitView({ padding: 0.22, duration: 220 })}>
+        <button type="button" onClick={() => void fitView({ padding: 0.35, maxZoom: 1.1, duration: 220 })}>
           <Focus size={15} aria-hidden="true" /> Fit view
         </button>
         {!readOnly ? (
@@ -121,7 +130,7 @@ function GraphViewport({ document, readOnly, snapshot }: { document: NfaDocument
         }}
         onEdgeClick={readOnly ? undefined : (_, edge) => setSelectedEdge(edge)}
         fitView
-        fitViewOptions={{ padding: 0.22 }}
+        fitViewOptions={{ padding: 0.35, maxZoom: 1.1 }}
         minZoom={0.25}
         maxZoom={2}
         deleteKeyCode={null}

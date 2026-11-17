@@ -141,7 +141,10 @@ The Test canvas renders both read-only graphs, the consumed input strip, current
 and the final backend verdict. The bottom dock holds speed/playback controls and selectable
 positions. A backend disagreement is shown explicitly with both verdicts.
 
-No browser visual review was performed because browser tooling is unavailable in this workspace.
+Phase 9 adds Playwright workflows using installed Chrome, with isolated Next.js and FastAPI test
+servers. Desktop and mobile browser tests cover Build, Convert, playback, Test, import/export,
+and axe-core accessibility checks. Responsive screenshots are captured locally in the ignored
+`frontend/qa-artifacts/` directory at widths 1440, 1024, 768, 390, and 360 pixels.
 
 ## Current phase boundary
 
@@ -154,4 +157,4 @@ Available now:
 - dual NFA/DFA graphs, DFA subset mapping, statistics, and complete transition table;
 - responsive Build/Convert/Test shell with synchronized string simulation.
 
-Phase 9 release work is deferred.
+Phase 9 release QA, browser verification, and deployment documentation are complete.

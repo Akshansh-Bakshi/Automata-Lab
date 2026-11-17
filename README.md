@@ -1,9 +1,8 @@
 # AutomataLab
 
-AutomataLab is an incremental full-stack NFA-to-DFA learning application. It includes a polished
-interactive NFA editor, typed FastAPI integration, curated examples, a deterministic conversion
-engine, complete static DFA visualization, and a production-style API. Step-by-step conversion
-playback and string-simulation controls remain deferred to later phases.
+AutomataLab is an interactive NFA-to-DFA learning application. Build an NFA, watch subset
+construction produce a DFA, then run an input string through both machines. The FastAPI backend
+owns all automata mathematics; the Next.js frontend renders its conversion and simulation traces.
 
 ## Repository layout
 
@@ -58,7 +57,7 @@ Available endpoints:
 Interactive API documentation is available at <http://localhost:8000/docs>. See
 [`docs/api-contract.md`](docs/api-contract.md) for the JSON contract and error conventions.
 
-The Phase 6 frontend provides:
+The application provides:
 
 - responsive Build, Convert, and Test workspace modes;
 - live backend health status;
@@ -119,6 +118,32 @@ npm run generate:api-types
 See [`docs/frontend-architecture.md`](docs/frontend-architecture.md) for component, state, and
 generated-contract details.
 
+## Algorithm
+
+The Python core validates the NFA, computes epsilon closures, and performs breadth-first subset
+construction. Each reachable subset becomes one DFA state; an empty subset is retained as a dead
+state when needed. Canonical ordering makes conversion repeatable. The backend returns a trace for
+step playback and independently simulates the NFA and DFA for each test string. See
+[`docs/algorithm.md`](docs/algorithm.md).
+
+## Demonstration
+
+1. Open **Examples** and load **One or more a symbols**.
+2. Open **Build** to inspect its NFA graph and transition table.
+3. Open **Convert**, select **Generate DFA**, inspect the dead state, and use **Step by step** to
+   follow the subset worklist to the complete DFA.
+4. Open **Test**, run `a` for acceptance, `b` for rejection, and an empty input for epsilon.
+5. Export the NFA from **Import / export**, then import that JSON to restore it.
+
+## Environment and deployment
+
+Copy `frontend/.env.example` to `frontend/.env.local` for local development. Set
+`NEXT_PUBLIC_API_BASE_URL` to the browser-reachable backend origin; Next.js embeds this public
+value at build time. Set backend `FRONTEND_ORIGIN` to the exact frontend origin for CORS. Neither
+variable is a secret. Do not put secrets in `NEXT_PUBLIC_*` values. The app has no database,
+account system, or required secret keys. See [`docs/deployment.md`](docs/deployment.md) for
+container, Vercel, health-check, and production-run instructions.
+
 ## Run all checks
 
 Frontend:
@@ -130,6 +155,7 @@ npm run typecheck
 npm test
 npm run check:api-contract
 npm run build
+npm run test:e2e
 ```
 
 Backend:
@@ -141,4 +167,17 @@ python -m ruff check .
 python -m mypy automatalab
 python -m pytest --cov=automatalab.core --cov=automatalab.api --cov-branch --cov-report=term-missing --cov-fail-under=95
 ```
+
+Browser tests use installed Google Chrome and start isolated local frontend/backend servers.
+Set `AUTOMATALAB_BACKEND_PYTHON` to the Python executable with backend dependencies installed if
+`python` is not that interpreter. The test ports are 3000 and 8017.
+
+## Known limitations
+
+- Input symbols are single characters and the API enforces documented state, input, and request
+  size limits to keep conversion and simulation bounded.
+- Graph canvases are visual and pointer-friendly. The synchronized transition tables and inspector
+  forms provide keyboard-accessible alternatives.
+- Python 3.12 is the declared backend runtime. If it is unavailable locally, use the included
+  Python 3.12 container; local fallback interpreter results should be reported separately.
 

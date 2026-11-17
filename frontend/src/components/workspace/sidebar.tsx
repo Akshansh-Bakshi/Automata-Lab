@@ -26,10 +26,6 @@ export function Sidebar({ mode, document, validation }: SidebarProps) {
         {mode === "convert" ? <ConvertInspector document={document} validation={validation} /> : null}
         {mode === "test" ? <TestInspector document={document} validation={validation} /> : null}
       </div>
-      <div className="phase-note">
-        <span>Phase 8</span>
-        Build, conversion playback, and synchronized string simulation are available.
-      </div>
     </aside>
   );
 }

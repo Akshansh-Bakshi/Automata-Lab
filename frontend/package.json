@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "generate:api-types": "python ../backend/scripts/export_openapi.py --output openapi.json && openapi-typescript openapi.json -o src/lib/api/generated.ts",
     "check:api-contract": "npm run generate:api-types && tsc --noEmit"
   },
@@ -29,6 +30,8 @@
     "zustand": "5.1.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/postcss": "4.3.5",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.3",

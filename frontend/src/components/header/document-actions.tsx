@@ -86,6 +86,7 @@ export function DocumentActions({ document: nfaDocument }: { document: NfaDocume
       <button
         className="header-action"
         type="button"
+        aria-label="Import / export"
         aria-expanded={open}
         onClick={() => {
           setOpen((value) => !value);

@@ -45,8 +45,8 @@ export function TransitionEdge(props: EdgeProps<TransitionFlowEdge>) {
 function selfLoopPath(x: number, y: number): [string, number, number, number, number] {
   const top = y - 68;
   return [
-    `M ${x - 12} ${y} C ${x - 58} ${top}, ${x + 58} ${top}, ${x + 12} ${y}`,
-    x,
+    `M ${x - 12} ${y} C ${x - 58} ${top}, ${x + 12} ${top}, ${x + 12} ${y}`,
+    x - 22,
     top + 5,
     0,
     0,

@@ -23,14 +23,14 @@ interface AppHeaderProps {
 export function AppHeader(props: AppHeaderProps) {
   return (
     <header className="app-header">
-      <a className="brand" href="#workspace" aria-label="AutomataLab workspace home">
+      <a className="brand" href="#workspace">
         <span className="brand__mark" aria-hidden="true">
           <Orbit size={21} strokeWidth={1.8} />
         </span>
         <span className="brand__wordmark">
           Automata<span>Lab</span>
         </span>
-        <span className="brand__phase">Alpha</span>
+        <span className="brand__phase">v1.0</span>
       </a>
       <ModeSwitcher />
       <div className="app-header__actions">

@@ -86,7 +86,7 @@ implemented. String simulation remains deferred to Phase 8.
   metadata and do not invalidate or revalidate the automaton.
 - Import never replaces the current document until local structure and backend semantics pass.
 
-## Verification
+## Earlier verification snapshots
 
 Executed on 16 November 2026:
 
@@ -109,7 +109,7 @@ Executed on 16 November 2026:
   dead rendering, total-table enforcement, subset inspection, curated-example conversion, and
   import-to-conversion workflow.
 
-## Remaining limitations
+## Limitations at the Phase 6 checkpoint
 
 - Python 3.12 is unavailable on this host. Runtime backend tests used Python 3.10.0; project
   metadata, Ruff, and mypy continue to target Python 3.12.
@@ -148,6 +148,38 @@ passed, generated API contract check passed, and the Next.js production build co
 Ruff and strict mypy passed; all 71 pytest tests passed. Browser tooling was unavailable, so no
 browser visual review is claimed.
 
+### Phase 9 — Final QA and release readiness
+
+Added Playwright against real Chrome with isolated Next.js/FastAPI servers, 11 passing desktop and
+mobile workflow/accessibility tests and one expected mobile skip for the desktop-only screenshot
+test. Captured and opened screenshots at 1440, 1024, 768, 390, and 360 pixels. Fixed lost
+transition-save feedback, inaccessible mobile header actions, axe contrast and ARIA findings, and
+graph self-loop clipping at the tablet split view. Added a non-root Python 3.12 backend container,
+health check, deployment guide, and updated product documentation. The container built, served
+`/api/health`, and reported healthy.
+
+## Final verification (17 November 2026)
+
+- Frontend: ESLint, strict TypeScript, 59 Vitest tests in 25 files, generated OpenAPI contract
+  check, and Next.js production build passed.
+- Browser: 11 Playwright workflows passed across desktop and mobile Chrome; axe reported no
+  serious or critical violations in Build, Convert, and Test. The responsive screenshot test
+  passed on desktop and was skipped by design in the mobile project.
+- Backend on local Python 3.10: Ruff, strict mypy, and 71 pytest tests passed with 98.28% combined
+  core/API branch coverage.
+- Backend on Python 3.12 in Docker: Ruff, strict mypy, and all 71 pytest tests passed. The image
+  built, served `/api/health`, and reported healthy.
+- `npm audit --audit-level=moderate` reported zero vulnerabilities. `git diff --check` passed.
+
+## Remaining limitations
+
+- Python 3.12 is available in Docker, but is not installed on the Windows host. Local browser tests
+  used the Python 3.10 backend runtime; the production container uses Python 3.12.
+- Backend pytest emits one third-party FastAPI/Starlette test-client deprecation warning.
+- The browser suite uses installed Google Chrome. Its screenshot artifacts are local and ignored
+  by Git. Graph canvases also offer tables and inspector forms for keyboard interaction.
+
 ## Next planned phase
 
-Phase 9 is release preparation and deployment work; it has not started.
+No implementation phase remains. Deployment is a separate authorized release action; no service
+was published or external account changed during Phase 9.

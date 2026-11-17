@@ -7,10 +7,11 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useNodesState,
+  useNodesInitialized,
   useReactFlow,
 } from "@xyflow/react";
 import { Focus, LayoutDashboard } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { DfaDocument } from "@/lib/api/types";
 import type { PlaybackSnapshot } from "@/lib/conversion/playback-model";
 import {
@@ -55,18 +56,26 @@ function DfaGraphViewport({ dfa, snapshot, simulationHighlight, readOnly }: { df
   const setDfaLayoutPosition = useAutomatonStore((state) => state.setDfaLayoutPosition);
   const replaceDfaLayout = useAutomatonStore((state) => state.replaceDfaLayout);
   const { fitView } = useReactFlow<DfaFlowNode, DfaFlowEdge>();
+  const nodesInitialized = useNodesInitialized();
+  const didFit = useRef(false);
+
+  useEffect(() => {
+    if (!nodesInitialized || didFit.current) return;
+    didFit.current = true;
+    window.requestAnimationFrame(() => void fitView({ padding: 0.35, maxZoom: 0.85, duration: 0 }));
+  }, [nodesInitialized, fitView]);
 
   const autoLayout = () => {
     const layout = createDfaLayout(dfa);
     setNodes((current) => current.map((node) => ({ ...node, position: layout[node.id] })));
     replaceDfaLayout(layout);
-    window.requestAnimationFrame(() => void fitView({ padding: 0.22, duration: 240 }));
+    window.requestAnimationFrame(() => void fitView({ padding: 0.35, maxZoom: 0.85, duration: 240 }));
   };
 
   return (
     <div className="dfa-graph" aria-label="Generated DFA graph">
       <div className="graph-toolbar" aria-label="DFA graph controls">
-        <button type="button" onClick={() => void fitView({ padding: 0.22, duration: 220 })}>
+        <button type="button" onClick={() => void fitView({ padding: 0.35, maxZoom: 0.85, duration: 220 })}>
           <Focus size={15} aria-hidden="true" /> Fit view
         </button>
         {!readOnly ? <button type="button" onClick={autoLayout}>
@@ -83,7 +92,7 @@ function DfaGraphViewport({ dfa, snapshot, simulationHighlight, readOnly }: { df
         onPaneClick={readOnly ? undefined : () => selectDfaState(null)}
         onNodeDragStop={readOnly ? undefined : (_, node) => setDfaLayoutPosition(node.id, node.position)}
         fitView
-        fitViewOptions={{ padding: 0.22 }}
+        fitViewOptions={{ padding: 0.35, maxZoom: 0.85 }}
         minZoom={0.2}
         maxZoom={2}
         deleteKeyCode={null}
