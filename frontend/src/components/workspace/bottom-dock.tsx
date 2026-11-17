@@ -7,6 +7,9 @@ import type { NfaDocument } from "@/lib/api/types";
 import { TransitionTable } from "@/components/editor/transition-table";
 import { DfaTransitionTable } from "@/components/conversion/dfa-transition-table";
 import { useAutomatonStore } from "@/store/automaton-store";
+import { usePlaybackStore } from "@/store/playback-store";
+import { getPlaybackSnapshot, inspectPlaybackTrace } from "@/lib/conversion/playback-model";
+import { PlaybackControls } from "@/components/conversion/playback-controls";
 
 export function BottomDock({ mode, document }: { mode: WorkspaceMode; document: NfaDocument | null }) {
   const open = useWorkspaceStore((state) => state.bottomDockOpen);
@@ -14,6 +17,11 @@ export function BottomDock({ mode, document }: { mode: WorkspaceMode; document: 
   const copy = dockCopy[mode];
   const conversion = useAutomatonStore((state) => state.conversion);
   const conversionFresh = useAutomatonStore((state) => state.isConversionFresh());
+  const position = usePlaybackStore((state) => state.position);
+  const view = usePlaybackStore((state) => state.view);
+  const traceValid = conversion && document && conversion.trace.steps.length && !inspectPlaybackTrace(conversion.trace, document, conversion.dfa).length;
+  const snapshot = conversion && conversionFresh && document && view === "step" && traceValid
+    ? getPlaybackSnapshot(conversion.trace, position, document, conversion.dfa) : undefined;
 
   return (
     <section className="bottom-dock" data-open={open} aria-label={copy.title}>
@@ -30,7 +38,7 @@ export function BottomDock({ mode, document }: { mode: WorkspaceMode; document: 
           {mode === "build" && document ? (
             <TransitionTable document={document} />
           ) : mode === "convert" && conversion && conversionFresh ? (
-            <DfaTransitionTable dfa={conversion.dfa} />
+            <div className="playback-dock">{view === "step" && traceValid ? <PlaybackControls trace={conversion.trace} /> : null}<DfaTransitionTable dfa={conversion.dfa} snapshot={snapshot} /></div>
           ) : (
             <>
               <Info size={17} aria-hidden="true" />

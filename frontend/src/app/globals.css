@@ -2473,3 +2473,36 @@ code {
   }
 }
 
+/* Conversion playback */
+.automaton-state-node[data-active="true"] .state-node__ring,
+.dfa-state-node[data-processing="true"] .dfa-state-node__ring {
+  border-color: #2563eb;
+  border-width: 3px;
+  box-shadow: 0 0 0 4px rgb(37 99 235 / 16%);
+}
+.dfa-state-node[data-new="true"] .dfa-state-node__ring {
+  outline: 3px dashed #b45309;
+  outline-offset: 4px;
+}
+.automaton-edge--active { stroke: #2563eb; stroke-width: 3px; }
+.playback-view-switch, .playback-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.playback-view-switch { padding: 8px 12px; border-bottom: 1px solid #d9e0e9; }
+.playback-view-switch button, .playback-buttons button, .playback-speed select {
+  border: 1px solid #ccd5e1; border-radius: 8px; background: white; color: #172235; padding: 6px 9px;
+}
+.playback-view-switch button[aria-pressed="true"] { background: #e5efff; border-color: #5282d8; }
+.playback-view-switch button:disabled { opacity: .5; }
+.trace-study { grid-column: 1 / -1; border: 1px solid #d9e0e9; border-radius: 12px; background: #fff; padding: 14px; display: grid; gap: 10px; }
+.trace-study__heading, .trace-study__math, .trace-study__worklist { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.trace-study__heading { justify-content: space-between; }
+.trace-study__worklist code { border: 1px dashed #b4c3d6; border-radius: 6px; padding: 3px 7px; }
+.trace-study p { margin: 0; }
+.playback-dock { display: grid; gap: 12px; width: 100%; }
+.playback-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.playback-buttons button { display: inline-flex; align-items: center; gap: 5px; }
+.playback-timeline { display: flex; align-items: center; gap: 8px; flex: 1 1 230px; }
+.playback-timeline input { flex: 1; min-width: 120px; accent-color: #2563eb; }
+.playback-speed { display: flex; align-items: center; gap: 6px; }
+.dfa-transition-table td[data-active="true"] { background: #dbeafe; outline: 2px solid #2563eb; outline-offset: -2px; }
+.playback-error { padding: 8px 12px; color: #9f1239; }
+@media (prefers-reduced-motion: reduce) { .dfa-state-node, .automaton-state-node, .automaton-edge { animation: none !important; transition: none !important; } }

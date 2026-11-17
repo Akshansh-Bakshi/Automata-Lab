@@ -9,6 +9,7 @@ export interface StateNodeData extends Record<string, unknown> {
 }
 
 export interface TransitionEdgeData extends Record<string, unknown> {
+  active?: boolean;
   symbols: string[];
   reverse: boolean;
   selfLoop: boolean;

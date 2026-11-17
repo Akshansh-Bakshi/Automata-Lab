@@ -1,7 +1,7 @@
 # Frontend architecture
 
-Phase 6 adds backend-powered DFA generation and static visualization to the Phase 5 NFA editor.
-Step playback and simulation controls remain out of scope.
+Phase 7 adds trace-driven subset-construction playback to the Phase 6 conversion workspace.
+String simulation remains a future phase.
 
 ## Runtime structure
 
@@ -31,7 +31,7 @@ Zustand remains split by change frequency and responsibility:
 - `automaton-store.ts` — active NFA document, editor selection/notices, atomic state/alphabet/
   transition mutations, semantic and layout revisions, conversion result, and conversion
   freshness.
-- `playback-store.ts` — future timeline position, status, and speed.
+- `playback-store.ts` — timeline position, playing/paused status, speed, and full/step view.
 
 The API-shaped `NfaDocument` is the only mathematical source of truth. XYFlow nodes and visual
 edges are derived by `src/lib/editor/graph-model.ts`; the transition table reads and writes the
@@ -109,9 +109,24 @@ visual treatments. Dagre provides initial and user-requested layout without chan
 
 The Convert inspector exposes returned statistics, subset membership, accepting-state reasoning,
 and selected-state details. The bottom dock renders the complete deterministic transition table.
-The conversion trace is stored for Phase 7 but is not played in Phase 6.
+`src/lib/conversion/playback-model.ts` derives random-access snapshots from the backend trace,
+original NFA, and complete DFA. It uses trace events as the source for visible states,
+transitions, NFA lookup highlights, and recorded worklist order. A trace contract check prevents
+playback of malformed or inconsistent records. Each snapshot drives both graph canvases, the
+progressive table, the worklist, and the explanation panel. The full view uses the same conversion
+response without a second request.
 
-## Phase 6 boundary
+Playback owns only the current trace index, playing/paused status, and speed. Its interval is
+cleaned up on status changes and unmount; scrubbing calculates snapshots directly instead of
+mutating an incremental partial automaton.
+
+The DFA graph initializes positions from the complete DFA once per conversion revision and filters
+visible nodes and transitions at each step. NFA lookup highlights are derived from recorded
+per-state targets. Blue thick borders identify active states/edges, an amber dashed ring marks a
+new DFA state, and the table marks newly established cells. Pending cells are distinct from
+transitions to the empty-subset dead state. Reduced-motion preferences suppress transitions.
+
+## Current phase boundary
 
 Available now:
 
@@ -124,5 +139,4 @@ Available now:
 
 Intentionally unavailable until later phases:
 
-- step-by-step conversion playback;
 - interactive string simulation.

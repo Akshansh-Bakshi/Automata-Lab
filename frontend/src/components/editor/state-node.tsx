@@ -11,6 +11,7 @@ export function StateNode({ data, selected }: NodeProps<StateFlowNode>) {
       data-accepting={data.accepting}
       data-initial={data.initial}
       data-selected={selected}
+      data-active={Boolean(data.active)}
       aria-label={`${data.label}${data.initial ? ", initial" : ""}${
         data.accepting ? ", accepting" : ""
       } state`}

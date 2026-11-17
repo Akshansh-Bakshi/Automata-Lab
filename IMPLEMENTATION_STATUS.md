@@ -119,7 +119,20 @@ Executed on 16 November 2026:
   Graph behavior is covered by model, DOM, synchronization, production-build, and accessibility
   tests; an actual browser review remains recommended.
 
+### Phase 7 — Interactive trace playback
+
+Implemented deterministic random-access snapshots derived from the backend trace, trace contract
+checks, full/step view switching, progressive DFA state/edge and transition-table reveal, NFA
+lookup highlighting, backend explanations and recorded BFS worklist, and timeline controls.
+Playback supports stepping, scrubbing, speed changes, restart, first/final jumps, automatic stop,
+mode-change pause, and semantic-edit invalidation. The final frame uses the complete backend DFA.
+
+Phase 7 verification: frontend lint and strict typecheck passed; 20 Vitest files and 47 tests
+passed; generated API contract check passed; Next.js production build completed with a statically
+prerendered root route. Backend Ruff, strict mypy, and all 71 pytest tests passed. Browser visual
+review was unavailable because browser tooling is not installed.
+
 ## Next planned phase
 
-Phase 7 should add conversion-trace playback using the already stored backend trace. It must not
-reimplement subset construction or mutate the static DFA result. Phase 7 work has not started.
+Phase 8 should add NFA/DFA string simulation and compare acceptance using the backend simulation
+endpoint. Phase 7 must be completed and verified before starting it.

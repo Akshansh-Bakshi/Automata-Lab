@@ -28,7 +28,7 @@ export function TransitionEdge(props: EdgeProps<TransitionFlowEdge>) {
         id={props.id}
         path={path}
         markerEnd={props.markerEnd}
-        className={props.selected ? "automaton-edge automaton-edge--selected" : "automaton-edge"}
+        className={props.selected ? "automaton-edge automaton-edge--selected" : data?.active ? "automaton-edge automaton-edge--active" : "automaton-edge"}
       />
       <EdgeLabelRenderer>
         <span

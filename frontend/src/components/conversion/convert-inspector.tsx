@@ -14,7 +14,9 @@ import { useState } from "react";
 import type { NfaValidationState } from "@/hooks/use-nfa-validation";
 import type { NfaDocument } from "@/lib/api/types";
 import { runConversion } from "@/lib/conversion/run-conversion";
+import { getPlaybackSnapshot, inspectPlaybackTrace } from "@/lib/conversion/playback-model";
 import { useAutomatonStore } from "@/store/automaton-store";
+import { usePlaybackStore } from "@/store/playback-store";
 import { PanelSection } from "@/components/workspace/panel-section";
 
 export function ConvertInspector({
@@ -32,9 +34,14 @@ export function ConvertInspector({
   const fresh = useAutomatonStore((state) => state.isConversionFresh());
   const selectedDfaStateId = useAutomatonStore((state) => state.selectedDfaStateId);
   const selectDfaState = useAutomatonStore((state) => state.selectDfaState);
+  const view = usePlaybackStore((state) => state.view);
+  const position = usePlaybackStore((state) => state.position);
   const readyToConvert = Boolean(document && validation.status === "valid");
   const dfa = conversion?.dfa;
-  const selectedState = dfa?.states.find((state) => state.id === selectedDfaStateId) ?? null;
+  const snapshot = document && conversion && fresh && view === "step" && !inspectPlaybackTrace(conversion.trace, document, conversion.dfa).length
+    ? getPlaybackSnapshot(conversion.trace, position, document, conversion.dfa) : null;
+  const visibleStates = dfa?.states.filter((state) => !snapshot || snapshot.visibleStateIds.includes(state.id)) ?? [];
+  const selectedState = visibleStates.find((state) => state.id === selectedDfaStateId) ?? null;
 
   return (
     <>
@@ -87,21 +94,21 @@ export function ConvertInspector({
           <PanelSection eyebrow="Result" title="Conversion statistics">
             <div className="conversion-stats">
               <Stat label="NFA states" value={dfa.stats.nfaStates} />
-              <Stat label="DFA states" value={dfa.stats.dfaStates} />
-              <Stat label="Transitions" value={dfa.stats.dfaTransitions} />
-              <Stat label="Accepting" value={dfa.acceptingStates.length} />
+              <Stat label="DFA states" value={snapshot ? visibleStates.length : dfa.stats.dfaStates} />
+              <Stat label="Transitions" value={snapshot ? snapshot.visibleTransitions.length : dfa.stats.dfaTransitions} />
+              <Stat label="Accepting" value={snapshot ? visibleStates.filter((state) => state.isAccepting).length : dfa.acceptingStates.length} />
             </div>
             <div className="dead-state-readout" data-present={dfa.stats.hasDeadState}>
               <Skull size={13} />
-              {dfa.stats.hasDeadState ? "Dead state included" : "No dead state required"}
+              {snapshot ? visibleStates.some((state) => state.isDead) ? "Dead state discovered" : "Dead state not yet discovered" : dfa.stats.hasDeadState ? "Dead state included" : "No dead state required"}
             </div>
-            {!dfa.acceptingStates.length ? (
+            {!snapshot && !dfa.acceptingStates.length ? (
               <p className="conversion-note">This valid DFA has no accepting states, so its language is empty.</p>
             ) : null}
           </PanelSection>
           <PanelSection eyebrow="Subset mapping" title="DFA state membership">
             <div className="subset-mapping-list">
-              {dfa.states.map((state) => (
+              {visibleStates.map((state) => (
                 <button
                   type="button"
                   key={state.id}

@@ -12,6 +12,7 @@ import {
 import { Focus, LayoutDashboard } from "lucide-react";
 import { useMemo } from "react";
 import type { DfaDocument } from "@/lib/api/types";
+import type { PlaybackSnapshot } from "@/lib/conversion/playback-model";
 import {
   createDfaLayout,
   dfaToEdges,
@@ -26,18 +27,30 @@ import { DfaStateNode } from "./dfa-state-node";
 const nodeTypes = { dfaState: DfaStateNode };
 const edgeTypes = { transition: TransitionEdge };
 
-export function DfaGraph({ dfa, revision }: { dfa: DfaDocument; revision: number }) {
+export function DfaGraph({ dfa, revision, snapshot }: { dfa: DfaDocument; revision: number; snapshot?: PlaybackSnapshot }) {
   return (
     <ReactFlowProvider>
-      <DfaGraphViewport key={revision} dfa={dfa} />
+      <DfaGraphViewport key={revision} dfa={dfa} snapshot={snapshot} />
     </ReactFlowProvider>
   );
 }
 
-function DfaGraphViewport({ dfa }: { dfa: DfaDocument }) {
+function DfaGraphViewport({ dfa, snapshot }: { dfa: DfaDocument; snapshot?: PlaybackSnapshot }) {
   const savedLayout = useAutomatonStore((state) => state.dfaLayout);
-  const [nodes, setNodes, onNodesChange] = useNodesState<DfaFlowNode>(dfaToNodes(dfa, savedLayout));
+  // The complete layout is calculated once for this conversion revision.
+  // Subsequent trace steps only filter these positioned nodes.
+  const initialNodes = useMemo(() => dfaToNodes(dfa, savedLayout), [dfa]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [nodes, setNodes, onNodesChange] = useNodesState<DfaFlowNode>(initialNodes);
   const edges = useMemo(() => dfaToEdges(dfa), [dfa]);
+  const shownNodes = useMemo(() => nodes.filter((node) => !snapshot || snapshot.visibleStateIds.includes(node.id)).map((node) => ({
+    ...node,
+    data: { ...node.data, processing: snapshot?.step && "dfaState" in snapshot.step && snapshot.step.dfaState === node.id, newlyDiscovered: snapshot?.newlyDiscoveredState === node.id },
+  })), [nodes, snapshot]);
+  const shownEdges = useMemo(() => {
+    if (!snapshot) return edges;
+    const partial = dfaToEdges({ ...dfa, transitions: snapshot.visibleTransitions });
+    return partial.map((edge) => ({ ...edge, data: { symbols: edge.data?.symbols ?? [], selfLoop: edge.data?.selfLoop ?? false, reverse: edge.data?.reverse ?? false, active: edge.source === snapshot.currentTransition?.from && edge.target === snapshot.currentTransition?.to && edge.data?.symbols.includes(snapshot.currentTransition.symbol) } }));
+  }, [dfa, edges, snapshot]);
   const selectDfaState = useAutomatonStore((state) => state.selectDfaState);
   const setDfaLayoutPosition = useAutomatonStore((state) => state.setDfaLayoutPosition);
   const replaceDfaLayout = useAutomatonStore((state) => state.replaceDfaLayout);
@@ -61,8 +74,8 @@ function DfaGraphViewport({ dfa }: { dfa: DfaDocument }) {
         </button>
       </div>
       <ReactFlow<DfaFlowNode, DfaFlowEdge>
-        nodes={nodes}
-        edges={edges}
+        nodes={shownNodes}
+        edges={shownEdges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}

@@ -73,8 +73,10 @@ The Phase 6 frontend provides:
 - side-by-side read-only NFA and generated DFA graphs;
 - canonical DFA subset labels, accepting/initial/dead-state styling, and Dagre layout;
 - complete DFA transition table, subset mapping inspector, and backend statistics;
+- trace-driven step playback with progressive DFA graph/table reveal, synchronized NFA lookup
+  highlights, recorded worklist, explanations, timeline controls, and full DFA view;
 - typed clients for every backend endpoint;
-- honest empty states for later playback and simulation features.
+- an honest empty state for the later simulation feature.
 
 Basic editor workflow:
 
@@ -92,7 +94,9 @@ Conversion workflow:
 3. Select **Generate DFA** to call the backend subset-construction engine.
 4. Inspect the source NFA and generated DFA side by side, select DFA states to review their NFA
    subsets, and expand the DFA transition table.
-5. Return to **Build** to edit the source. Semantic edits invalidate the result; graph dragging
+5. Select **Step by step** above the DFA, expand the bottom dock, and use Play, Pause, step buttons,
+   the timeline, or speed selector. Select **Full DFA** to return to the complete graph and table.
+6. Return to **Build** to edit the source. Semantic edits invalidate the result; graph dragging
    preserves it. Generate again when the result is marked stale.
 
 Regenerate frontend API types after changing FastAPI schemas or routes:

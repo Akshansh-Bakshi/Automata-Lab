@@ -14,6 +14,7 @@ import {
 import { Focus, LayoutDashboard, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { NfaDocument } from "@/lib/api/types";
+import type { PlaybackSnapshot } from "@/lib/conversion/playback-model";
 import {
   documentToEdges,
   documentToNodes,
@@ -33,21 +34,25 @@ export function NfaGraph({
   document,
   revision,
   readOnly = false,
+  snapshot,
 }: {
   document: NfaDocument;
   revision: number;
   readOnly?: boolean;
+  snapshot?: PlaybackSnapshot;
 }) {
   return (
     <ReactFlowProvider>
-      <GraphViewport key={revision} document={document} readOnly={readOnly} />
+      <GraphViewport key={revision} document={document} readOnly={readOnly} snapshot={snapshot} />
     </ReactFlowProvider>
   );
 }
 
-function GraphViewport({ document, readOnly }: { document: NfaDocument; readOnly: boolean }) {
+function GraphViewport({ document, readOnly, snapshot }: { document: NfaDocument; readOnly: boolean; snapshot?: PlaybackSnapshot }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<StateFlowNode>(documentToNodes(document));
   const edges = useMemo(() => documentToEdges(document), [document]);
+  const shownNodes = useMemo(() => nodes.map((node) => ({ ...node, data: { ...node.data, active: snapshot?.activeNfaStates.includes(node.id) } })), [nodes, snapshot]);
+  const shownEdges = useMemo(() => edges.map((edge) => ({ ...edge, data: { symbols: edge.data?.symbols ?? [], selfLoop: edge.data?.selfLoop ?? false, reverse: edge.data?.reverse ?? false, active: snapshot?.activeNfaTransitions.some((lookup) => lookup.from === edge.source && lookup.to === edge.target && edge.data?.symbols.includes(lookup.symbol)) } })), [edges, snapshot]);
   const [pendingConnection, setPendingConnection] = useState<Connection | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<TransitionFlowEdge | null>(null);
   const selectState = useAutomatonStore((state) => state.selectState);
@@ -98,8 +103,8 @@ function GraphViewport({ document, readOnly }: { document: NfaDocument; readOnly
         ) : null}
       </div>
       <ReactFlow<StateFlowNode, TransitionFlowEdge>
-        nodes={nodes}
-        edges={edges}
+        nodes={shownNodes}
+        edges={shownEdges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}

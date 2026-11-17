@@ -32,9 +32,16 @@ export function ApplicationShell() {
           cancelActiveConversion();
           resetPlayback();
         }
+        if (state.conversion !== previous.conversion) resetPlayback();
       }),
     [resetPlayback],
   );
+
+  useEffect(() => useWorkspaceStore.subscribe((state, previous) => {
+    if (state.activeMode !== previous.activeMode && state.activeMode !== "convert") {
+      usePlaybackStore.getState().setStatus("paused");
+    }
+  }), []);
 
   const selectExample = (example: Example) => {
     loadExample(example);

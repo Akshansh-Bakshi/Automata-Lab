@@ -13,6 +13,8 @@ export function DfaStateNode({ data, selected }: NodeProps<DfaFlowNode>) {
       data-dead={data.dead}
       data-initial={data.initial}
       data-selected={selected}
+      data-processing={Boolean(data.processing)}
+      data-new={Boolean(data.newlyDiscovered)}
       title={`${data.id} = ${subsetText}`}
       aria-label={`${data.id}, ${data.dead ? "empty subset dead state" : `subset ${data.subset.join(", ")}`}${
         data.initial ? ", initial" : ""

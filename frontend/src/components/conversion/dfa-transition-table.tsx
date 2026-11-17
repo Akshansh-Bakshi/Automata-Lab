@@ -1,8 +1,9 @@
 import { AlertTriangle, CheckCircle2, CircleDot, Skull } from "lucide-react";
 import type { DfaDocument } from "@/lib/api/types";
 import { inspectDfaContract } from "@/lib/conversion/dfa-graph-model";
+import type { PlaybackSnapshot } from "@/lib/conversion/playback-model";
 
-export function DfaTransitionTable({ dfa }: { dfa: DfaDocument }) {
+export function DfaTransitionTable({ dfa, snapshot }: { dfa: DfaDocument; snapshot?: PlaybackSnapshot }) {
   const contractIssues = inspectDfaContract(dfa);
   if (contractIssues.length) {
     return (
@@ -28,7 +29,7 @@ export function DfaTransitionTable({ dfa }: { dfa: DfaDocument }) {
           </tr>
         </thead>
         <tbody>
-          {dfa.states.map((state) => (
+          {dfa.states.filter((state) => !snapshot || snapshot.visibleStateIds.includes(state.id)).map((state) => (
             <tr key={state.id} data-dead={state.isDead}>
               <th scope="row">
                 <span className="dfa-table-state">
@@ -40,10 +41,11 @@ export function DfaTransitionTable({ dfa }: { dfa: DfaDocument }) {
               </th>
               <td><code>{state.subset.length ? `{${state.subset.join(", ")}}` : "∅"}</code></td>
               {dfa.alphabet.map((symbol) => {
-                const transition = dfa.transitions.find(
+                const transition = (snapshot?.visibleTransitions ?? dfa.transitions).find(
                   (candidate) => candidate.from === state.id && candidate.symbol === symbol,
                 );
-                return <td key={symbol}><code>{transition?.to}</code></td>;
+                const active = snapshot?.currentTransition?.from === state.id && snapshot.currentTransition.symbol === symbol;
+                return <td key={symbol} data-active={active || undefined}><code>{transition?.to ?? "Pending"}</code></td>;
               })}
             </tr>
           ))}
