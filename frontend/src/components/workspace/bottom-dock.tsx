@@ -10,6 +10,8 @@ import { useAutomatonStore } from "@/store/automaton-store";
 import { usePlaybackStore } from "@/store/playback-store";
 import { getPlaybackSnapshot, inspectPlaybackTrace } from "@/lib/conversion/playback-model";
 import { PlaybackControls } from "@/components/conversion/playback-controls";
+import { useSimulationStore } from "@/store/simulation-store";
+import { SimulationControls } from "@/components/simulation/simulation-controls";
 
 export function BottomDock({ mode, document }: { mode: WorkspaceMode; document: NfaDocument | null }) {
   const open = useWorkspaceStore((state) => state.bottomDockOpen);
@@ -22,6 +24,10 @@ export function BottomDock({ mode, document }: { mode: WorkspaceMode; document: 
   const traceValid = conversion && document && conversion.trace.steps.length && !inspectPlaybackTrace(conversion.trace, document, conversion.dfa).length;
   const snapshot = conversion && conversionFresh && document && view === "step" && traceValid
     ? getPlaybackSnapshot(conversion.trace, position, document, conversion.dfa) : undefined;
+  const simulation = useSimulationStore((state) => state.result);
+  const simulationStatus = useSimulationStore((state) => state.status);
+  const simulationRevision = useSimulationStore((state) => state.revision);
+  const documentRevision = useAutomatonStore((state) => state.documentRevision);
 
   return (
     <section className="bottom-dock" data-open={open} aria-label={copy.title}>
@@ -39,6 +45,8 @@ export function BottomDock({ mode, document }: { mode: WorkspaceMode; document: 
             <TransitionTable document={document} />
           ) : mode === "convert" && conversion && conversionFresh ? (
             <div className="playback-dock">{view === "step" && traceValid ? <PlaybackControls trace={conversion.trace} /> : null}<DfaTransitionTable dfa={conversion.dfa} snapshot={snapshot} /></div>
+          ) : mode === "test" && simulation && simulationStatus === "ready" && simulationRevision === documentRevision ? (
+            <SimulationControls result={simulation} />
           ) : (
             <>
               <Info size={17} aria-hidden="true" />
@@ -64,8 +72,8 @@ const dockCopy = {
   },
   test: {
     title: "Simulation timeline",
-    summary: "No input has been simulated",
-    empty: "Per-character NFA and DFA execution steps will appear here in the testing phase.",
+    summary: "Navigate synchronized NFA and DFA execution",
+    empty: "Run a string simulation to inspect its execution positions.",
   },
 } satisfies Record<WorkspaceMode, { title: string; summary: string; empty: string }>;
 

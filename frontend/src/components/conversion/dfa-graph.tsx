@@ -27,30 +27,30 @@ import { DfaStateNode } from "./dfa-state-node";
 const nodeTypes = { dfaState: DfaStateNode };
 const edgeTypes = { transition: TransitionEdge };
 
-export function DfaGraph({ dfa, revision, snapshot }: { dfa: DfaDocument; revision: number; snapshot?: PlaybackSnapshot }) {
+export function DfaGraph({ dfa, revision, snapshot, simulationHighlight, readOnly = false }: { dfa: DfaDocument; revision: number; snapshot?: PlaybackSnapshot; simulationHighlight?: { state: string; transition: { from: string; symbol: string; to: string } | null }; readOnly?: boolean }) {
   return (
     <ReactFlowProvider>
-      <DfaGraphViewport key={revision} dfa={dfa} snapshot={snapshot} />
+      <DfaGraphViewport key={revision} dfa={dfa} snapshot={snapshot} simulationHighlight={simulationHighlight} readOnly={readOnly} />
     </ReactFlowProvider>
   );
 }
 
-function DfaGraphViewport({ dfa, snapshot }: { dfa: DfaDocument; snapshot?: PlaybackSnapshot }) {
+function DfaGraphViewport({ dfa, snapshot, simulationHighlight, readOnly }: { dfa: DfaDocument; snapshot?: PlaybackSnapshot; simulationHighlight?: { state: string; transition: { from: string; symbol: string; to: string } | null }; readOnly: boolean }) {
   const savedLayout = useAutomatonStore((state) => state.dfaLayout);
   // The complete layout is calculated once for this conversion revision.
   // Subsequent trace steps only filter these positioned nodes.
-  const initialNodes = useMemo(() => dfaToNodes(dfa, savedLayout), [dfa]); // eslint-disable-line react-hooks/exhaustive-deps
+  const initialNodes = useMemo(() => dfaToNodes(dfa, readOnly ? {} : savedLayout), [dfa, readOnly]); // eslint-disable-line react-hooks/exhaustive-deps
   const [nodes, setNodes, onNodesChange] = useNodesState<DfaFlowNode>(initialNodes);
   const edges = useMemo(() => dfaToEdges(dfa), [dfa]);
   const shownNodes = useMemo(() => nodes.filter((node) => !snapshot || snapshot.visibleStateIds.includes(node.id)).map((node) => ({
     ...node,
-    data: { ...node.data, processing: snapshot?.step && "dfaState" in snapshot.step && snapshot.step.dfaState === node.id, newlyDiscovered: snapshot?.newlyDiscoveredState === node.id },
-  })), [nodes, snapshot]);
+    data: { ...node.data, processing: simulationHighlight?.state === node.id || Boolean(snapshot?.step && "dfaState" in snapshot.step && snapshot.step.dfaState === node.id), newlyDiscovered: snapshot?.newlyDiscoveredState === node.id },
+  })), [nodes, snapshot, simulationHighlight]);
   const shownEdges = useMemo(() => {
-    if (!snapshot) return edges;
+    if (!snapshot) return edges.map((edge) => ({ ...edge, data: { symbols: edge.data?.symbols ?? [], selfLoop: edge.data?.selfLoop ?? false, reverse: edge.data?.reverse ?? false, active: edge.source === simulationHighlight?.transition?.from && edge.target === simulationHighlight.transition.to && edge.data?.symbols.includes(simulationHighlight.transition.symbol) } }));
     const partial = dfaToEdges({ ...dfa, transitions: snapshot.visibleTransitions });
     return partial.map((edge) => ({ ...edge, data: { symbols: edge.data?.symbols ?? [], selfLoop: edge.data?.selfLoop ?? false, reverse: edge.data?.reverse ?? false, active: edge.source === snapshot.currentTransition?.from && edge.target === snapshot.currentTransition?.to && edge.data?.symbols.includes(snapshot.currentTransition.symbol) } }));
-  }, [dfa, edges, snapshot]);
+  }, [dfa, edges, snapshot, simulationHighlight]);
   const selectDfaState = useAutomatonStore((state) => state.selectDfaState);
   const setDfaLayoutPosition = useAutomatonStore((state) => state.setDfaLayoutPosition);
   const replaceDfaLayout = useAutomatonStore((state) => state.replaceDfaLayout);
@@ -69,9 +69,9 @@ function DfaGraphViewport({ dfa, snapshot }: { dfa: DfaDocument; snapshot?: Play
         <button type="button" onClick={() => void fitView({ padding: 0.22, duration: 220 })}>
           <Focus size={15} aria-hidden="true" /> Fit view
         </button>
-        <button type="button" onClick={autoLayout}>
+        {!readOnly ? <button type="button" onClick={autoLayout}>
           <LayoutDashboard size={15} aria-hidden="true" /> Auto layout
-        </button>
+        </button> : null}
       </div>
       <ReactFlow<DfaFlowNode, DfaFlowEdge>
         nodes={shownNodes}
@@ -79,16 +79,16 @@ function DfaGraphViewport({ dfa, snapshot }: { dfa: DfaDocument; snapshot?: Play
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
-        onNodeClick={(_, node) => selectDfaState(node.id)}
-        onPaneClick={() => selectDfaState(null)}
-        onNodeDragStop={(_, node) => setDfaLayoutPosition(node.id, node.position)}
+        onNodeClick={readOnly ? undefined : (_, node) => selectDfaState(node.id)}
+        onPaneClick={readOnly ? undefined : () => selectDfaState(null)}
+        onNodeDragStop={readOnly ? undefined : (_, node) => setDfaLayoutPosition(node.id, node.position)}
         fitView
         fitViewOptions={{ padding: 0.22 }}
         minZoom={0.2}
         maxZoom={2}
         deleteKeyCode={null}
         nodesConnectable={false}
-        nodesDraggable
+        nodesDraggable={!readOnly}
         elementsSelectable
         panOnDrag
         zoomOnScroll

@@ -132,7 +132,22 @@ passed; generated API contract check passed; Next.js production build completed 
 prerendered root route. Backend Ruff, strict mypy, and all 71 pytest tests passed. Browser visual
 review was unavailable because browser tooling is not installed.
 
+### Phase 8 — Synchronized string simulation
+
+Implemented a Test input editor with alphabet and invalid-symbol feedback, ε input, 1,000-symbol
+limit, clear and keyboard submission. The typed `/api/simulate` workflow sends the canonical NFA,
+supports cancellation and duplicate prevention, and binds results to document revision and input.
+The returned NFA/DFA traces drive independent playback controls, both read-only graphs, visual
+transition highlights, input consumption, selectable timeline positions, and final acceptance and
+agreement display. Malformed responses fail safely; backend disagreement is displayed explicitly.
+Semantic edits invalidate simulation; cosmetic layout changes preserve results. Conversion state
+and playback are independent.
+
+Phase 8 verification: frontend lint and strict typecheck passed, 25 Vitest files and 59 tests
+passed, generated API contract check passed, and the Next.js production build completed. Backend
+Ruff and strict mypy passed; all 71 pytest tests passed. Browser tooling was unavailable, so no
+browser visual review is claimed.
+
 ## Next planned phase
 
-Phase 8 should add NFA/DFA string simulation and compare acceptance using the backend simulation
-endpoint. Phase 7 must be completed and verified before starting it.
+Phase 9 is release preparation and deployment work; it has not started.

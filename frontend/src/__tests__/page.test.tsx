@@ -30,7 +30,7 @@ describe("HomePage", () => {
 
     await user.click(screen.getByRole("button", { name: "Test" }));
     expect(screen.getByRole("heading", { name: "Test workspace" })).toBeInTheDocument();
-    expect(screen.getByText("No simulation has been run.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Test a string" })).toBeInTheDocument();
   });
 });
 

@@ -6,8 +6,8 @@ import type { WorkspaceMode } from "@/store/workspace-store";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NfaGraph } from "@/components/editor/nfa-graph";
 import { ConversionWorkspace } from "@/components/conversion/conversion-workspace";
+import { SimulationWorkspace } from "@/components/simulation/simulation-workspace";
 import { useAutomatonStore } from "@/store/automaton-store";
-import { NfaSummary } from "./nfa-summary";
 
 interface WorkspaceCanvasProps {
   mode: WorkspaceMode;
@@ -53,7 +53,7 @@ export function WorkspaceCanvas({ mode, document }: WorkspaceCanvasProps) {
         ) : mode === "convert" ? (
           <ConversionWorkspace document={document} revision={revision} />
         ) : (
-          <NfaSummary document={document} />
+          <SimulationWorkspace document={document} revision={revision} />
         )}
       </section>
     </main>
@@ -74,7 +74,7 @@ const canvasCopy = {
   test: {
     kicker: "Language comparison",
     title: "Test workspace",
-    description: "The active NFA remains visible while future simulation traces occupy the contextual panels.",
+    description: "Run both machines on an input string and inspect synchronized execution traces.",
   },
 } satisfies Record<WorkspaceMode, { kicker: string; title: string; description: string }>;
 

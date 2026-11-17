@@ -1,7 +1,6 @@
 # Frontend architecture
 
-Phase 7 adds trace-driven subset-construction playback to the Phase 6 conversion workspace.
-String simulation remains a future phase.
+Phase 8 adds backend-powered string simulation and synchronized execution playback to the Test workspace.
 
 ## Runtime structure
 
@@ -126,6 +125,24 @@ per-state targets. Blue thick borders identify active states/edges, an amber das
 new DFA state, and the table marks newly established cells. Pending cells are distinct from
 transitions to the empty-subset dead state. Reduced-motion preferences suppress transitions.
 
+## String simulation
+
+`src/lib/simulation/run-simulation.ts` submits the canonical NFA and exact input to the typed
+`/api/simulate` endpoint. Request IDs, document revisions, and input matching prevent stale
+responses from committing. Input edits abort active requests; semantic edits clear simulation
+results, while cosmetic graph movement preserves them. Simulation state and timers live in a
+separate Zustand store from conversion playback.
+
+`src/lib/simulation/simulation-model.ts` checks trace shape, positions, symbols, DFA transitions,
+NFA/DFA subset correspondence, and final acceptance flags. It derives the current NFA active set,
+the DFA state, and visual edge highlights from the two returned traces. Position zero is the
+initial configuration. Timeline scrubbing reads a position directly, so rewind is deterministic.
+The Test canvas renders both read-only graphs, the consumed input strip, current configuration,
+and the final backend verdict. The bottom dock holds speed/playback controls and selectable
+positions. A backend disagreement is shown explicitly with both verdicts.
+
+No browser visual review was performed because browser tooling is unavailable in this workspace.
+
 ## Current phase boundary
 
 Available now:
@@ -135,8 +152,6 @@ Available now:
 - synchronized graph, inspector, and transition table;
 - backend conversion with freshness and racing-response protection;
 - dual NFA/DFA graphs, DFA subset mapping, statistics, and complete transition table;
-- responsive Build/Convert/Test shell and honest future-phase empty states.
+- responsive Build/Convert/Test shell with synchronized string simulation.
 
-Intentionally unavailable until later phases:
-
-- interactive string simulation.
+Phase 9 release work is deferred.

@@ -35,20 +35,22 @@ export function NfaGraph({
   revision,
   readOnly = false,
   snapshot,
+  simulationHighlight,
 }: {
   document: NfaDocument;
   revision: number;
   readOnly?: boolean;
   snapshot?: PlaybackSnapshot;
+  simulationHighlight?: Pick<PlaybackSnapshot, "activeNfaStates" | "activeNfaTransitions">;
 }) {
   return (
     <ReactFlowProvider>
-      <GraphViewport key={revision} document={document} readOnly={readOnly} snapshot={snapshot} />
+      <GraphViewport key={revision} document={document} readOnly={readOnly} snapshot={snapshot ?? simulationHighlight} />
     </ReactFlowProvider>
   );
 }
 
-function GraphViewport({ document, readOnly, snapshot }: { document: NfaDocument; readOnly: boolean; snapshot?: PlaybackSnapshot }) {
+function GraphViewport({ document, readOnly, snapshot }: { document: NfaDocument; readOnly: boolean; snapshot?: Pick<PlaybackSnapshot, "activeNfaStates" | "activeNfaTransitions"> }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<StateFlowNode>(documentToNodes(document));
   const edges = useMemo(() => documentToEdges(document), [document]);
   const shownNodes = useMemo(() => nodes.map((node) => ({ ...node, data: { ...node.data, active: snapshot?.activeNfaStates.includes(node.id) } })), [nodes, snapshot]);

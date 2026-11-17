@@ -75,8 +75,10 @@ The Phase 6 frontend provides:
 - complete DFA transition table, subset mapping inspector, and backend statistics;
 - trace-driven step playback with progressive DFA graph/table reveal, synchronized NFA lookup
   highlights, recorded worklist, explanations, timeline controls, and full DFA view;
+- backend-powered string simulation with synchronized NFA/DFA traces, active-state highlights,
+  input timeline, and explicit acceptance/agreement results;
 - typed clients for every backend endpoint;
-- an honest empty state for the later simulation feature.
+- structured simulation errors and revision-bound result freshness.
 
 Basic editor workflow:
 
@@ -98,6 +100,14 @@ Conversion workflow:
    the timeline, or speed selector. Select **Full DFA** to return to the complete graph and table.
 6. Return to **Build** to edit the source. Semantic edits invalidate the result; graph dragging
    preserves it. Generate again when the result is marked stale.
+
+String-testing workflow:
+
+1. Load or build a valid NFA, then select **Test**.
+2. Enter symbols from the displayed alphabet, or leave the field empty to test ε.
+3. Select **Run simulation** (or press Enter). The backend returns independent NFA and DFA traces.
+4. Expand the bottom timeline to play, pause, step, scrub, or change speed. The two graphs and
+   input strip stay on the same position. The final verdict appears at the last position.
 
 Regenerate frontend API types after changing FastAPI schemas or routes:
 
